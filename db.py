@@ -7,12 +7,16 @@ Includes Enterprise WhatsApp Alert Automation persistence and history logging.
 import os
 import json
 import uuid
+import urllib.request
+import urllib.parse
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 LOCAL_DB_PATH = os.path.join(DATA_DIR, "database.json")
 FIREBASE_CREDS_PATH = os.environ.get("FIREBASE_CREDENTIALS", os.path.join(BASE_DIR, "firebase-credentials.json"))
+FIREBASE_DB_URL = os.environ.get("FIREBASE_DB_URL", "https://vyapaar-pulse-ai-default-rtdb.firebaseio.com")
+FIREBASE_DB_SECRET = os.environ.get("FIREBASE_DB_SECRET", "H4XegOo6AxBtoq21kSbdwFGhTTiB0GVNVFBi35G3")
 
 # Initial Seed Data
 DEFAULT_STATE = {
@@ -210,12 +214,55 @@ _firebase_enabled = False
 _db_status = {"connected": False, "mode": "Local JSON Persistent Storage", "detail": "Using local file database"}
 
 
-def init_firebase():
-    """Attempts to initialize Firebase Firestore if credentials exist."""
-    global _firestore_client, _firebase_enabled, _db_status
-    if _firestore_client is not None:
-        return _firestore_client
+def _sync_firebase_rtdb_put(path, data):
+    """PUT data to Firebase Realtime Database using Secret Token."""
+    if not FIREBASE_DB_URL or not FIREBASE_DB_SECRET:
+        return False
+    try:
+        url = f"{FIREBASE_DB_URL.rstrip('/')}/{path.lstrip('/')}.json?auth={FIREBASE_DB_SECRET}"
+        body = json.dumps(data, ensure_ascii=False).encode('utf-8')
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="PUT")
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            return resp.status in (200, 204)
+    except Exception:
+        return False
 
+
+def _sync_firebase_rtdb_get(path):
+    """GET data from Firebase Realtime Database using Secret Token."""
+    if not FIREBASE_DB_URL or not FIREBASE_DB_SECRET:
+        return None
+    try:
+        url = f"{FIREBASE_DB_URL.rstrip('/')}/{path.lstrip('/')}.json?auth={FIREBASE_DB_SECRET}"
+        req = urllib.request.Request(url, headers={"User-Agent": "VyapaarPulse/1.0"}, method="GET")
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            content = resp.read().decode('utf-8')
+            return json.loads(content) if content and content != 'null' else None
+    except Exception:
+        return None
+
+
+def init_firebase():
+    """Attempts to initialize Firebase Realtime DB or Firestore."""
+    global _firestore_client, _firebase_enabled, _db_status
+    if _firebase_enabled:
+        return True
+
+    # 1. Firebase Realtime Database with Database Secret (Instant Cloud Sync)
+    if FIREBASE_DB_URL and FIREBASE_DB_SECRET:
+        try:
+            cloud_data = _sync_firebase_rtdb_get("msme_businesses/default_business")
+            _firebase_enabled = True
+            _db_status = {
+                "connected": True,
+                "mode": "Firebase Realtime Database Live",
+                "detail": f"Connected to {FIREBASE_DB_URL.split('://')[-1]}"
+            }
+            return True
+        except Exception:
+            pass
+
+    # 2. Firebase Firestore with Service Account Key File
     if os.path.exists(FIREBASE_CREDS_PATH):
         try:
             import firebase_admin
@@ -239,13 +286,13 @@ def init_firebase():
                 "detail": f"Firebase init error: {str(e)}. Using fallback database."
             }
             return None
-    else:
-        _db_status = {
-            "connected": False,
-            "mode": "Local JSON Persistent Storage (Firebase Ready)",
-            "detail": "Provide firebase-credentials.json or FIREBASE_CREDENTIALS env to enable cloud sync."
-        }
-        return None
+
+    _db_status = {
+        "connected": False,
+        "mode": "Local JSON Persistent Storage",
+        "detail": "Provide Firebase credentials or secret to enable cloud sync."
+    }
+    return None
 
 
 def get_db_status():
@@ -265,31 +312,50 @@ def get_db_status():
 
 
 def load_state():
-    """Loads state from Firebase Firestore or Local JSON DB."""
-    client = init_firebase()
-    if client:
+    """Loads state from Firebase Realtime DB, Firestore, or Local JSON DB."""
+    init_firebase()
+
+    # 1. Try Firebase Realtime Database
+    if FIREBASE_DB_URL and FIREBASE_DB_SECRET:
         try:
-            doc_ref = client.collection("msme_businesses").document("default_business")
-            doc = doc_ref.get()
-            if doc.exists:
-                data = doc.to_dict()
+            cloud_data = _sync_firebase_rtdb_get("msme_businesses/default_business")
+            if cloud_data and isinstance(cloud_data, dict):
                 # Ensure whatsapp_automation exists
-                if "whatsapp_automation" not in data:
-                    data["whatsapp_automation"] = DEFAULT_STATE["whatsapp_automation"]
-                return data
+                if "whatsapp_automation" not in cloud_data:
+                    cloud_data["whatsapp_automation"] = DEFAULT_STATE["whatsapp_automation"]
+                # Mirror to local backup
+                os.makedirs(DATA_DIR, exist_ok=True)
+                with open(LOCAL_DB_PATH, "w", encoding="utf-8") as f:
+                    json.dump(cloud_data, f, indent=2, ensure_ascii=False)
+                return cloud_data
             else:
-                # Seed default data to Firestore
+                # Seed cloud database
                 save_state(DEFAULT_STATE)
                 return DEFAULT_STATE
         except Exception:
             pass
 
-    # Local fallback
+    # 2. Try Firestore Client
+    if _firestore_client:
+        try:
+            doc_ref = _firestore_client.collection("msme_businesses").document("default_business")
+            doc = doc_ref.get()
+            if doc.exists:
+                data = doc.to_dict()
+                if "whatsapp_automation" not in data:
+                    data["whatsapp_automation"] = DEFAULT_STATE["whatsapp_automation"]
+                return data
+            else:
+                save_state(DEFAULT_STATE)
+                return DEFAULT_STATE
+        except Exception:
+            pass
+
+    # 3. Local JSON fallback
     if os.path.exists(LOCAL_DB_PATH):
         try:
             with open(LOCAL_DB_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                # Ensure all default keys exist
                 for k, v in DEFAULT_STATE.items():
                     if k not in data:
                         data[k] = v
@@ -306,16 +372,25 @@ def load_state():
 
 
 def save_state(state):
-    """Saves state to Firebase Firestore and/or Local JSON DB."""
+    """Saves state to Firebase Cloud and Local JSON DB."""
     state["last_sync"] = datetime.now().isoformat()
-    client = init_firebase()
-    if client:
+
+    # 1. Sync to Firebase Realtime Database
+    if FIREBASE_DB_URL and FIREBASE_DB_SECRET:
         try:
-            doc_ref = client.collection("msme_businesses").document("default_business")
+            _sync_firebase_rtdb_put("msme_businesses/default_business", state)
+        except Exception:
+            pass
+
+    # 2. Sync to Firestore
+    if _firestore_client:
+        try:
+            doc_ref = _firestore_client.collection("msme_businesses").document("default_business")
             doc_ref.set(state)
         except Exception:
             pass
 
+    # 3. Mirror to Local Backup
     os.makedirs(DATA_DIR, exist_ok=True)
     with open(LOCAL_DB_PATH, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)

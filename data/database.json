@@ -1,14 +1,20 @@
 {
   "business_profile": {
-    "category": "small",
+    "category": "micro",
     "city": "Salem",
+    "email": "owner@chinnutextiles.in",
     "established_year": 2018,
-    "name": "Chinnu Textiles & Home Store",
+    "gst_registered": true,
+    "investment_lakhs": 18.5,
+    "is_rural": true,
+    "is_women_owned": true,
+    "name": "Chinnu Textiles & Handlooms",
     "owner_name": "Chinnu",
     "phone": "+91 98765 43210",
-    "sector": "retail",
+    "sector": "textiles",
     "state": "Tamil Nadu",
-    "turnover_lakhs": 68.0
+    "turnover_lakhs": 68.0,
+    "udyam_registered": true
   },
   "custom_datasets": [
     {
@@ -428,7 +434,7 @@
       "unit_cost": 620
     }
   ],
-  "last_sync": "2026-08-18T12:40:44.474910",
+  "last_sync": "2026-08-18T13:05:45.486819",
   "reviews": [
     {
       "date": "2026-08-10",
@@ -519,7 +525,7 @@
     "Jul'26",
     "Aug'26"
   ],
-  "use_mock_data": true,
+  "use_mock_data": false,
   "whatsapp_automation": {
     "cooldown_minutes": 360,
     "enabled": true,
@@ -623,6 +629,110 @@
     }
   },
   "whatsapp_log": [
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "daily_summary",
+      "id": "alert-83abcf87",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹183.9k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *50.0% Positive* (NPS Estimate: +8)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Handlooms · Automated Intelligence Dispatch · 18 Aug 2026, 01:05 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T13:05:44",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "daily_summary",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "test_connection",
+      "id": "alert-8eefe01b",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Handlooms · 18 Aug 2026, 01:05 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T13:05:31",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "system",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "stockout_risk",
+      "id": "alert-e6d5d8e7",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Handlooms · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 01:05 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T13:05:27",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "stockout_risk",
+      "urgency": "critical"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "scheme_guide",
+      "id": "alert-c1001e8a",
+      "message": "Namaste Chinnu Ji! Here is your tailored MSME Government Subsidy Brief:\n\n📌 Scheme: PMEGP — Prime Minister's Employment Generation Programme\n🏛️ Authority: KVIC / Ministry of MSME, Govt of India\n💰 Max Benefit: Up to 35.0% Capital Subsidy (Zero Collateral (Covered under CGTMSE))\n📄 Key Documents: Udyam Aadhaar Certificate, Detailed Project Report (DPR), Aadhaar & PAN Cards\n🌐 Apply Online: https://kviconline.gov.in/pmegpeportal\n\nEmpowering Chinnu Textiles & Handlooms via Vyapaar Pulse AI.",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T13:04:43",
+      "title": "🏛️ Government Subsidy Guide: PMEGP",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "scheme_guide",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "scheme_guide",
+      "id": "alert-64bac727",
+      "message": "Namaste Chinnu Ji! Here is your tailored MSME Government Subsidy Brief:\n\n📌 Scheme: PMEGP — Prime Minister's Employment Generation Programme\n🏛️ Authority: KVIC / Ministry of MSME, Govt of India\n💰 Max Benefit: Up to 35.0% Capital Subsidy (Zero Collateral (Covered under CGTMSE))\n📄 Key Documents: Udyam Aadhaar Certificate, Detailed Project Report (DPR), Aadhaar & PAN Cards\n🌐 Apply Online: https://kviconline.gov.in/pmegpeportal\n\nEmpowering Chinnu Textiles & Handlooms via Vyapaar Pulse AI.",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T13:03:34",
+      "title": "🏛️ Government Subsidy Guide: PMEGP",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "scheme_guide",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "daily_summary",
+      "id": "alert-710634c8",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹183.9k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *50.0% Positive* (NPS Estimate: +8)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 12:41 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:41:03",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "daily_summary",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "test_connection",
+      "id": "alert-8dfc29e0",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 12:40 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:40:53",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "system",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "stockout_risk",
+      "id": "alert-ba9ae625",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 12:40 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:40:49",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "stockout_risk",
+      "urgency": "critical"
+    },
     {
       "channel": "WhatsApp (Automated Bot)",
       "event_type": "sales_drop",

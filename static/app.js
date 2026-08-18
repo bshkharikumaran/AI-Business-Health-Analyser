@@ -16,6 +16,39 @@ const AppState = {
   customUploadedDatasets: [],
   activeCustomDatasetId: null,
 
+  // User Authentication & Business Profile State
+  currentUser: {
+    name: 'Chinnu',
+    business_name: 'Chinnu Textiles & Handlooms',
+    email: 'owner@chinnutextiles.in',
+    role: 'admin',
+    role_badge: 'Store Owner & MSME Admin',
+    phone: '+91 98765 43210',
+    authenticated: true
+  },
+  businessProfile: {
+    name: 'Chinnu Textiles & Handlooms',
+    owner_name: 'Chinnu',
+    phone: '+91 98765 43210',
+    email: 'owner@chinnutextiles.in',
+    category: 'micro',
+    sector: 'textiles',
+    turnover_lakhs: 68.0,
+    investment_lakhs: 18.5,
+    employees: 12,
+    state: 'Tamil Nadu',
+    city: 'Salem',
+    udyam_registered: true,
+    gst_registered: true,
+    is_women_owned: true,
+    is_sc_st: false,
+    is_rural: true
+  },
+  matchedSchemesData: null,
+  allSchemesCache: [],
+  selectedSchemesForComparison: ['pmegp', 'tn_needs', 'cgtmse'],
+  activeProjectCalculatorData: null,
+
   // Active Ingestion Dataset
   currentDatasetId: 'saas_metrics',
   currentDatasetName: 'Enterprise SaaS ARR & Subscriptions (2025-2026)',
@@ -129,6 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Initialize Mock Data Mode & Uploaded Custom Data Sources
   initMockModeAndSources();
 
+  // 3b. Initialize Authentication & Business Profile
+  initAuthAndProfile();
+
   // 4. Initialize Dashboard Visuals
   initDashboardCharts();
   renderDashboardInsights();
@@ -149,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
       closeConnectModal();
       closeChartFullscreen();
       closeHelpModal();
+      closeAuthModal();
+      closeSchemeComparisonModal();
+      closeProjectCalculatorModal();
     }
   });
 
@@ -197,6 +236,8 @@ function switchView(viewId) {
     renderUploadedSourcesGrid();
   } else if (viewId === 'settings') {
     updateMockDataModeUI();
+  } else if (viewId === 'govt-schemes') {
+    fetchGovtSchemes();
   } else if (viewId === 'whatsapp-automation') {
     fetchWhatsAppConfig();
     fetchWhatsAppRules();
@@ -3013,7 +3054,9 @@ async function sendAssistantTextMessage(customText = null) {
         'alerts': 'whatsapp-automation',
         'whatsapp-automation': 'whatsapp-automation',
         'data-feed': 'data-feed',
-        'data_feeding': 'data-feed'
+        'data_feeding': 'data-feed',
+        'govt-schemes': 'govt-schemes',
+        'schemes': 'govt-schemes'
       };
       const targetView = viewMap[result.view] || result.view;
       if (targetView && targetView !== AppState.activeView) {
@@ -3107,3 +3150,776 @@ function clearAssistantChat() {
   if (window.lucide) lucide.createIcons();
   showToast('AI conversation cleared', 'info');
 }
+
+// ==========================================================================
+// 12. USER AUTHENTICATION & BUSINESS PROFILE ONBOARDING CONTROLLER
+// ==========================================================================
+async function initAuthAndProfile() {
+  const savedUser = localStorage.getItem('vp_current_user');
+  const savedProfile = localStorage.getItem('vp_business_profile');
+
+  if (savedUser) {
+    try { AppState.currentUser = JSON.parse(savedUser); } catch (e) {}
+  }
+  if (savedProfile) {
+    try { AppState.businessProfile = JSON.parse(savedProfile); } catch (e) {}
+  }
+
+  // Sync with backend business profile
+  try {
+    const res = await fetch('/api/business/profile');
+    const data = await res.json();
+    if (data.success && data.profile) {
+      AppState.businessProfile = { ...AppState.businessProfile, ...data.profile };
+      if (data.matched_schemes) {
+        AppState.matchedSchemesData = data.matched_schemes;
+      }
+    }
+  } catch (err) {
+    console.warn('Using offline business profile baseline');
+  }
+
+  updateUserProfileUI();
+  populateOnboardingFormInputs();
+}
+
+function updateUserProfileUI() {
+  const u = AppState.currentUser || {};
+  const p = AppState.businessProfile || {};
+
+  const initials = (u.name || p.owner_name || 'CH')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
+  // Update Topbar
+  const topInitials = document.getElementById('topbarUserInitials');
+  const topName = document.getElementById('topbarUserName');
+  const topEmail = document.getElementById('topbarUserEmail');
+  const topRole = document.getElementById('topbarUserRoleBadge');
+
+  if (topInitials) topInitials.textContent = initials;
+  if (topName) topName.textContent = u.name || p.owner_name || 'Chinnu';
+  if (topEmail) topEmail.textContent = u.email || p.email || 'owner@chinnutextiles.in';
+  if (topRole) topRole.textContent = u.role_badge || 'Store Owner & MSME Admin';
+
+  // Update Sidebar
+  const sideAvatar = document.getElementById('sidebarUserAvatar');
+  const sideName = document.getElementById('sidebarUserName');
+  const sideRole = document.getElementById('sidebarUserRole');
+
+  if (sideAvatar) sideAvatar.innerHTML = `<span>${initials}</span>`;
+  if (sideName) sideName.textContent = p.owner_name || u.name || 'Chinnu';
+  if (sideRole) sideRole.textContent = p.name || 'Store Owner (MSME)';
+
+  // Update Schemes Hero Banner if present
+  updateSchemesHeroUI();
+}
+
+function populateOnboardingFormInputs() {
+  const p = AppState.businessProfile || {};
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  const setCheck = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = !!val;
+  };
+
+  setVal('onboardBusinessName', p.name || 'Chinnu Textiles & Handlooms');
+  setVal('onboardOwnerName', p.owner_name || 'Chinnu');
+  setVal('onboardPhone', p.phone || '+91 98765 43210');
+  setVal('onboardEmail', p.email || 'owner@chinnutextiles.in');
+  setVal('onboardCategory', (p.category || 'micro').toLowerCase());
+  setVal('onboardSector', (p.sector || 'textiles').toLowerCase());
+  setVal('onboardTurnover', p.turnover_lakhs || 68.0);
+  setVal('onboardInvestment', p.investment_lakhs || 18.5);
+  setVal('onboardEmployees', p.employees || 12);
+  setVal('onboardState', p.state || 'Tamil Nadu');
+  setVal('onboardCity', p.city || 'Salem');
+  setCheck('onboardUdyam', p.udyam_registered !== false);
+  setCheck('onboardGST', p.gst_registered !== false);
+  setCheck('onboardWomen', p.is_women_owned !== false);
+  setCheck('onboardRural', p.is_rural !== false);
+}
+
+function openAuthModal(tab = 'login') {
+  const modal = document.getElementById('authModal');
+  if (!modal) return;
+  switchAuthTab(tab);
+  modal.classList.add('active');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('authTabLogin');
+  const onboardTab = document.getElementById('authTabOnboard');
+  const loginBtn = document.getElementById('authTabLoginBtn');
+  const onboardBtn = document.getElementById('authTabOnboardBtn');
+
+  if (tab === 'login') {
+    if (loginTab) loginTab.classList.remove('hidden');
+    if (onboardTab) onboardTab.classList.add('hidden');
+    if (loginBtn) loginBtn.classList.add('active');
+    if (onboardBtn) onboardBtn.classList.remove('active');
+  } else {
+    if (loginTab) loginTab.classList.add('hidden');
+    if (onboardTab) onboardTab.classList.remove('hidden');
+    if (loginBtn) loginBtn.classList.remove('active');
+    if (onboardBtn) onboardBtn.classList.add('active');
+    goToWizardStep(1);
+  }
+}
+
+async function quickLoginDemo(userKey) {
+  let email = 'owner@chinnutextiles.in';
+  let name = 'Chinnu';
+  let role = 'admin';
+
+  if (userKey === 'sanjay') {
+    email = 'sanjay.raman@enterprise.ai';
+    name = 'Sanjay Raman';
+    role = 'admin';
+  } else if (userKey === 'ananya') {
+    email = 'ananya.patel@enterprise.ai';
+    name = 'Ananya Patel';
+    role = 'analyst';
+  }
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name, role })
+    });
+    const data = await res.json();
+    if (data.success) {
+      AppState.currentUser = data.user;
+      localStorage.setItem('vp_current_user', JSON.stringify(data.user));
+      updateUserProfileUI();
+      closeAuthModal();
+      showToast(`Signed in successfully as ${data.user.name} (${data.user.role_badge})`, 'success');
+    }
+  } catch (err) {
+    showToast('Failed to sign in', 'danger');
+  }
+}
+
+async function handleManualLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const role = document.getElementById('loginRole').value;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, role })
+    });
+    const data = await res.json();
+    if (data.success) {
+      AppState.currentUser = data.user;
+      localStorage.setItem('vp_current_user', JSON.stringify(data.user));
+      updateUserProfileUI();
+      closeAuthModal();
+      showToast(`Welcome back, ${data.user.name}!`, 'success');
+    }
+  } catch (err) {
+    showToast('Login verification failed', 'danger');
+  }
+}
+
+function goToWizardStep(stepNum) {
+  const p1 = document.getElementById('wizardPane1');
+  const p2 = document.getElementById('wizardPane2');
+  const p3 = document.getElementById('wizardPane3');
+  const s1 = document.getElementById('wStep1');
+  const s2 = document.getElementById('wStep2');
+  const s3 = document.getElementById('wStep3');
+
+  if (p1) p1.classList.add('hidden');
+  if (p2) p2.classList.add('hidden');
+  if (p3) p3.classList.add('hidden');
+  if (s1) s1.classList.remove('active');
+  if (s2) s2.classList.remove('active');
+  if (s3) s3.classList.remove('active');
+
+  if (stepNum === 1) {
+    if (p1) p1.classList.remove('hidden');
+    if (s1) s1.classList.add('active');
+  } else if (stepNum === 2) {
+    if (p2) p2.classList.remove('hidden');
+    if (s2) s2.classList.add('active');
+  } else if (stepNum === 3) {
+    if (p3) p3.classList.remove('hidden');
+    if (s3) s3.classList.add('active');
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+async function submitBusinessOnboarding() {
+  const getVal = id => document.getElementById(id)?.value?.trim() || '';
+  const getNum = id => parseFloat(document.getElementById(id)?.value) || 0;
+  const getCheck = id => !!document.getElementById(id)?.checked;
+
+  const profilePayload = {
+    name: getVal('onboardBusinessName') || 'Chinnu Textiles & Handlooms',
+    owner_name: getVal('onboardOwnerName') || 'Chinnu',
+    phone: getVal('onboardPhone') || '+91 98765 43210',
+    email: getVal('onboardEmail') || 'owner@chinnutextiles.in',
+    category: getVal('onboardCategory') || 'micro',
+    sector: getVal('onboardSector') || 'textiles',
+    turnover_lakhs: getNum('onboardTurnover') || 68.0,
+    investment_lakhs: getNum('onboardInvestment') || 18.5,
+    employees: parseInt(getVal('onboardEmployees')) || 12,
+    state: getVal('onboardState') || 'Tamil Nadu',
+    city: getVal('onboardCity') || 'Salem',
+    udyam_registered: getCheck('onboardUdyam'),
+    gst_registered: getCheck('onboardGST'),
+    is_women_owned: getCheck('onboardWomen'),
+    is_rural: getCheck('onboardRural')
+  };
+
+  showToast('Evaluating MSME government subsidy eligibility...', 'info');
+
+  try {
+    const res = await fetch('/api/business/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profilePayload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      AppState.businessProfile = data.profile;
+      AppState.matchedSchemesData = data.matched_schemes;
+      localStorage.setItem('vp_business_profile', JSON.stringify(data.profile));
+
+      updateUserProfileUI();
+      closeAuthModal();
+
+      // Switch to Govt Schemes view to showcase matched subsidies
+      switchView('govt-schemes');
+      renderGovtSchemesHub();
+
+      const count = data.matched_schemes?.match_count || 8;
+      const total = data.matched_schemes?.total_potential_subsidy_lakhs || '32.5';
+      showToast(`🎉 Matched ${count} Government Schemes with ₹${total}L Subsidy Potential!`, 'success');
+    }
+  } catch (err) {
+    showToast('Failed to update business profile', 'danger');
+  }
+}
+
+function logoutUser() {
+  localStorage.removeItem('vp_current_user');
+  showToast('Logged out of session. Switched to Guest Mode.', 'info');
+  openAuthModal('login');
+}
+
+
+// ==========================================================================
+// 13. GOVERNMENT SCHEMES & SUBSIDY COMPARATOR CONTROLLER
+// ==========================================================================
+async function fetchGovtSchemes(recalculate = false) {
+  try {
+    const endpoint = recalculate ? '/api/schemes/match' : '/api/schemes/all';
+    const method = recalculate ? 'POST' : 'GET';
+    const body = recalculate ? JSON.stringify(AppState.businessProfile || {}) : null;
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: recalculate ? { 'Content-Type': 'application/json' } : {},
+      body
+    });
+    const data = await res.json();
+
+    if (data.success && data.data) {
+      AppState.matchedSchemesData = data.data;
+      AppState.allSchemesCache = data.data.matches || [];
+      updateSchemesHeroUI();
+      renderGovtSchemesHub();
+    }
+  } catch (err) {
+    console.error('Error fetching government schemes:', err);
+  }
+}
+
+function updateSchemesHeroUI() {
+  const p = AppState.businessProfile || {};
+  const m = AppState.matchedSchemesData || {};
+
+  const nameEl = document.getElementById('shcBusinessName');
+  const catEl = document.getElementById('shcCategoryTag');
+  const secEl = document.getElementById('shcSectorTag');
+  const stateEl = document.getElementById('shcStateTag');
+  const incEl = document.getElementById('shcInclusivityTag');
+  const udyamEl = document.getElementById('shcUdyamTag');
+
+  if (nameEl) nameEl.textContent = p.name || 'Chinnu Textiles & Handlooms';
+  if (catEl) catEl.textContent = `${(p.category || 'Micro').toUpperCase()} Enterprise`;
+  if (secEl) secEl.textContent = (p.sector || 'Textiles').charAt(0).toUpperCase() + (p.sector || 'Textiles').slice(1);
+  if (stateEl) stateEl.textContent = p.state || 'Tamil Nadu';
+
+  if (incEl) {
+    if (p.is_women_owned) {
+      incEl.textContent = '👩 Women-Owned (35% Subsidy)';
+      incEl.style.display = 'inline-block';
+    } else if (p.is_rural) {
+      incEl.textContent = '🌾 Rural Unit';
+      incEl.style.display = 'inline-block';
+    } else {
+      incEl.style.display = 'none';
+    }
+  }
+
+  if (udyamEl) {
+    udyamEl.textContent = p.udyam_registered ? '✓ Udyam Active' : '⚠ Udyam Pending';
+    udyamEl.className = `shc-tag ${p.udyam_registered ? 'udyam' : 'special'}`;
+  }
+
+  // Update Hero Stats
+  const totalSub = document.getElementById('shcTotalSubsidyVal');
+  const matchCount = document.getElementById('shcMatchedCountVal');
+  const singleGrant = document.getElementById('shcMaxSingleGrantVal');
+  const guaranteeVal = document.getElementById('shcMaxGuaranteeVal');
+
+  if (totalSub) totalSub.textContent = `₹${m.total_potential_subsidy_lakhs || '32.50'} L`;
+  if (matchCount) matchCount.textContent = `${m.match_count || 8} Schemes`;
+  if (singleGrant) singleGrant.textContent = `₹${m.max_single_grant_lakhs || '17.50'} L`;
+  if (guaranteeVal) guaranteeVal.textContent = '₹5.00 Cr';
+}
+
+function renderGovtSchemesHub(filteredList = null) {
+  const container = document.getElementById('schemesCardsContainer');
+  if (!container) return;
+
+  const list = filteredList || AppState.allSchemesCache || [];
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty-custom-sources-card" style="grid-column: 1 / -1;">
+        <div class="empty-cs-icon"><i data-lucide="filter-x"></i></div>
+        <div class="empty-cs-title">No Government Schemes Found</div>
+        <div class="empty-cs-desc">No schemes match the current search filters. Try adjusting your filter parameters or enterprise category.</div>
+        <button class="btn-secondary" onclick="resetSchemeFilters()">Reset Filters</button>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  const p = AppState.businessProfile || {};
+
+  container.innerHTML = list.map(scheme => {
+    const isSelected = AppState.selectedSchemesForComparison.includes(scheme.id);
+    const badgeClass = scheme.match_score_pct >= 95 ? 'full' : 'high';
+
+    const docsHtml = (scheme.documents_needed || [])
+      .slice(0, 4)
+      .map(doc => `<span class="doc-pill"><i data-lucide="file-check"></i> ${doc}</span>`)
+      .join('');
+
+    return `
+      <div class="scheme-card" id="scheme-card-${scheme.id}">
+        <div>
+          <!-- Card Header -->
+          <div class="sc-header">
+            <div class="sc-brand-group">
+              <div class="sc-authority-emblem">
+                <i data-lucide="landmark"></i>
+              </div>
+              <div class="sc-title-box">
+                <div class="sc-title">${scheme.name}</div>
+                <div class="sc-authority">${scheme.authority}</div>
+              </div>
+            </div>
+            <span class="sc-badge-match ${badgeClass}">
+              ★ ${scheme.match_badge || (scheme.match_score_pct + '% Match')}
+            </span>
+          </div>
+
+          <!-- Summary -->
+          <div class="sc-summary">${scheme.summary}</div>
+
+          <!-- Financial Benefit Highlight Strip -->
+          <div class="sc-benefit-strip">
+            <div class="sc-benefit-item">
+              <div class="sc-benefit-val">${scheme.subsidy_pct > 0 ? scheme.subsidy_pct + '%' : 'Zero Collateral'}</div>
+              <div class="sc-benefit-lbl">${scheme.subsidy_pct > 0 ? 'Direct Subsidy' : 'Security Mode'}</div>
+            </div>
+            <div class="sc-benefit-item">
+              <div class="sc-benefit-val">₹${scheme.max_subsidy_lakhs > 0 ? scheme.max_subsidy_lakhs + 'L' : (scheme.max_loan_lakhs + 'L')}</div>
+              <div class="sc-benefit-lbl">${scheme.max_subsidy_lakhs > 0 ? 'Max Grant Cap' : 'Credit Limit'}</div>
+            </div>
+            <div class="sc-benefit-item">
+              <div class="sc-benefit-val" style="color: #3b82f6;">₹${scheme.estimated_subsidy_lakhs > 0 ? scheme.estimated_subsidy_lakhs + 'L' : (scheme.estimated_loan_lakhs + 'L')}</div>
+              <div class="sc-benefit-lbl">For Your Scale</div>
+            </div>
+          </div>
+
+          <!-- Why It Fits Box -->
+          <div class="sc-why-box">
+            <strong>💡 Why You Fit:</strong> ${scheme.why_it_fits}
+          </div>
+
+          <!-- Mandatory Documents Needed -->
+          <div class="sc-docs-list">
+            ${docsHtml}
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="sc-footer-actions">
+          <button class="btn-xs-outline" onclick="toggleSchemeComparison('${scheme.id}')">
+            <i data-lucide="${isSelected ? 'check-square' : 'square'}"></i>
+            <span>${isSelected ? 'Comparing' : 'Compare'}</span>
+          </button>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-xs-outline text-success" title="Send Official Scheme Guide to WhatsApp" onclick="sendSchemeToWhatsApp('${scheme.id}')">
+              <i data-lucide="send"></i> WhatsApp
+            </button>
+            <a href="${scheme.link}" target="_blank" rel="noopener" class="btn-primary-xs">
+              <i data-lucide="external-link"></i> Apply
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  updateComparisonTrayUI();
+  if (window.lucide) lucide.createIcons();
+}
+
+function handleSchemeSearch(query) {
+  filterSchemesList();
+}
+
+function filterSchemesList() {
+  const search = (document.getElementById('schemeSearchInput')?.value || '').toLowerCase().trim();
+  const typeFilter = document.getElementById('schemeTypeFilter')?.value || 'ALL';
+  const authFilter = document.getElementById('schemeAuthorityFilter')?.value || 'ALL';
+  const matchFilter = document.getElementById('schemeMatchLevelFilter')?.value || 'ALL';
+
+  const all = AppState.allSchemesCache || [];
+
+  const filtered = all.filter(s => {
+    // 1. Search text
+    if (search) {
+      const matchText = (s.name + ' ' + s.authority + ' ' + s.summary + ' ' + (s.documents_needed || []).join(' ')).toLowerCase();
+      if (!matchText.includes(search)) return false;
+    }
+    // 2. Financial Type
+    if (typeFilter !== 'ALL' && s.scheme_type !== typeFilter) {
+      return false;
+    }
+    // 3. Authority
+    if (authFilter !== 'ALL') {
+      if (authFilter === 'Tamil Nadu' && !s.authority.includes('Tamil Nadu')) return false;
+      if (authFilter === 'Central MSME' && !s.authority.includes('MSME') && !s.authority.includes('KVIC')) return false;
+      if (authFilter === 'SIDBI' && !s.authority.includes('SIDBI') && !s.authority.includes('Finance')) return false;
+    }
+    // 4. Match Level
+    if (matchFilter === '100' && s.match_score_pct < 95) return false;
+    if (matchFilter === '80' && s.match_score_pct < 80) return false;
+
+    return true;
+  });
+
+  renderGovtSchemesHub(filtered);
+}
+
+function resetSchemeFilters() {
+  const searchInput = document.getElementById('schemeSearchInput');
+  const typeFilter = document.getElementById('schemeTypeFilter');
+  const authFilter = document.getElementById('schemeAuthorityFilter');
+  const matchFilter = document.getElementById('schemeMatchLevelFilter');
+
+  if (searchInput) searchInput.value = '';
+  if (typeFilter) typeFilter.value = 'ALL';
+  if (authFilter) authFilter.value = 'ALL';
+  if (matchFilter) matchFilter.value = 'ALL';
+
+  renderGovtSchemesHub(AppState.allSchemesCache);
+}
+
+
+// ==========================================================================
+// 14. SCHEME COMPARISON & SIDE-BY-SIDE MATRIX
+// ==========================================================================
+function toggleSchemeComparison(schemeId) {
+  const index = AppState.selectedSchemesForComparison.indexOf(schemeId);
+  if (index > -1) {
+    AppState.selectedSchemesForComparison.splice(index, 1);
+  } else {
+    if (AppState.selectedSchemesForComparison.length >= 4) {
+      showToast('Maximum 4 schemes can be compared at once', 'warning');
+      return;
+    }
+    AppState.selectedSchemesForComparison.push(schemeId);
+  }
+
+  updateComparisonTrayUI();
+  renderGovtSchemesHub(); // Update checked status in cards
+}
+
+function updateComparisonTrayUI() {
+  const tray = document.getElementById('comparisonFloatingTray');
+  const itemsContainer = document.getElementById('comparisonTrayItems');
+  const badge = document.getElementById('comparisonCountBadge');
+  if (!tray || !itemsContainer) return;
+
+  const count = AppState.selectedSchemesForComparison.length;
+  if (count === 0) {
+    tray.style.display = 'none';
+    return;
+  }
+
+  tray.style.display = 'flex';
+  if (badge) badge.textContent = count;
+
+  const all = AppState.allSchemesCache || [];
+  itemsContainer.innerHTML = AppState.selectedSchemesForComparison.map(id => {
+    const s = all.find(item => item.id === id) || { name: id };
+    const shortName = s.name.split(' —')[0].split(' (')[0];
+    return `
+      <span class="cft-tag">
+        ${shortName}
+        <span class="cft-tag-remove" onclick="toggleSchemeComparison('${id}')">×</span>
+      </span>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function clearComparisonSelection() {
+  AppState.selectedSchemesForComparison = [];
+  updateComparisonTrayUI();
+  renderGovtSchemesHub();
+}
+
+async function openSchemeComparisonModal() {
+  const modal = document.getElementById('schemeComparisonModal');
+  if (!modal) return;
+
+  if (AppState.selectedSchemesForComparison.length < 2) {
+    showToast('Please select at least 2 schemes to compare side-by-side', 'info');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/schemes/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scheme_ids: AppState.selectedSchemesForComparison })
+    });
+    const data = await res.json();
+    if (data.success && data.comparison) {
+      renderComparisonMatrix(data.comparison);
+      modal.classList.add('active');
+      if (window.lucide) lucide.createIcons();
+    }
+  } catch (err) {
+    showToast('Failed to generate comparison matrix', 'danger');
+  }
+}
+
+function closeSchemeComparisonModal() {
+  const modal = document.getElementById('schemeComparisonModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function renderComparisonMatrix(comparison) {
+  const container = document.getElementById('schemeComparisonTableContainer');
+  if (!container) return;
+
+  const schemes = comparison.selected_schemes || [];
+  const fields = comparison.comparison_fields || [];
+
+  let headerHtml = `
+    <tr>
+      <th class="comparator-field-col">Feature / Dimension</th>
+      ${schemes.map(s => `
+        <th class="comparator-scheme-col">
+          <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">${s.name.split(' —')[0]}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); font-weight: 400; margin-top: 2px;">${s.authority}</div>
+          <div style="margin-top: 8px;">
+            <a href="${s.link}" target="_blank" class="btn-xs-outline"><i data-lucide="external-link"></i> Apply</a>
+          </div>
+        </th>
+      `).join('')}
+    </tr>
+  `;
+
+  let rowsHtml = fields.map(f => {
+    return `
+      <tr>
+        <td class="comparator-field-col">${f.label}</td>
+        ${schemes.map(s => {
+          let val = s[f.key];
+          if (val === undefined || val === null) val = '—';
+          if (f.prefix && typeof val === 'number') val = f.prefix + val;
+          if (f.suffix && typeof val === 'number') val = val + f.suffix;
+          return `<td class="comparator-scheme-col"><strong>${val}</strong></td>`;
+        }).join('')}
+      </tr>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <table class="comparator-matrix-table">
+      <thead>${headerHtml}</thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+}
+
+
+// ==========================================================================
+// 15. INTERACTIVE PROJECT SUBSIDY & MARGIN MONEY CALCULATOR
+// ==========================================================================
+function openProjectCalculatorModal(schemeId = 'pmegp') {
+  const modal = document.getElementById('schemeCalculatorModal');
+  if (!modal) return;
+
+  const select = document.getElementById('calcSchemeSelect');
+  if (select && schemeId) select.value = schemeId;
+
+  recomputeProjectSubsidy();
+  modal.classList.add('active');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeProjectCalculatorModal() {
+  const modal = document.getElementById('schemeCalculatorModal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function recomputeProjectSubsidy() {
+  const cost = parseFloat(document.getElementById('calcProjectCostInput')?.value) || 25.0;
+  const schemeId = document.getElementById('calcSchemeSelect')?.value || 'pmegp';
+
+  try {
+    const res = await fetch('/api/schemes/calculator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_cost_lakhs: cost,
+        scheme_id: schemeId
+      })
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      AppState.activeProjectCalculatorData = data.data;
+      renderProjectSubsidyResults(data.data);
+    }
+  } catch (err) {
+    console.error('Calculation error:', err);
+  }
+}
+
+function renderProjectSubsidyResults(calc) {
+  const hero = document.getElementById('calcResultsHero');
+  if (!hero) return;
+
+  const b = calc.breakdown || [];
+  const barSegments = b.map(item => `
+    <div class="calc-split-segment" style="width: ${item.pct}%; background-color: ${item.color};" title="${item.label}: ₹${item.amount_lakhs}L (${item.pct}%)"></div>
+  `).join('');
+
+  const cardsHtml = b.map(item => `
+    <div class="calc-card-item">
+      <div class="calc-item-amount" style="color: ${item.color};">₹${item.amount_lakhs} L</div>
+      <div class="calc-item-label">${item.label} (${item.pct}%)</div>
+    </div>
+  `).join('');
+
+  hero.innerHTML = `
+    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+      Financial Funding Breakdown for ₹${calc.project_cost_lakhs} Lakhs Project:
+    </div>
+
+    <!-- Visual Split Progress Bar -->
+    <div class="calc-split-bar">
+      ${barSegments}
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="calc-breakdown-cards">
+      ${cardsHtml}
+    </div>
+
+    <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 12px; color: var(--text-primary);">
+      ✨ <strong>Estimated Bank Interest Savings:</strong> By receiving ₹${calc.subsidy_amount_lakhs} Lakhs in direct grant subsidy, your enterprise saves approximately <strong>₹${calc.interest_saved_annual_lakhs} Lakhs per year</strong> in bank loan interest payments!
+    </div>
+  `;
+}
+
+async function sendSchemeToWhatsApp(schemeId) {
+  showToast('Dispatching scheme guide to WhatsApp...', 'info');
+  try {
+    const res = await fetch('/api/schemes/send-whatsapp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scheme_id: schemeId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ Official Scheme Guide sent to WhatsApp! Check WhatsApp Alerts tab.`, 'success');
+      fetchWhatsAppHistory();
+    }
+  } catch (err) {
+    showToast('Failed to dispatch to WhatsApp', 'danger');
+  }
+}
+
+async function sendActiveCalculatorToWhatsApp() {
+  const calc = AppState.activeProjectCalculatorData;
+  if (!calc) return;
+
+  const phone = AppState.businessProfile?.phone || '+91 98765 43210';
+  const owner = AppState.businessProfile?.owner_name || 'Chinnu';
+
+  const message = (
+    `📊 *MSME Project Subsidy & Financing Breakdown*\n\n` +
+    `Hello *${owner}*,\n\n` +
+    `Here is your simulated project cost breakdown for *₹${calc.project_cost_lakhs} Lakhs* under *${calc.scheme_name}*:\n\n` +
+    `🟢 *Direct Government Subsidy Grant:* ₹${calc.subsidy_amount_lakhs} Lakhs (${calc.subsidy_rate_pct}% Non-Repayable)\n` +
+    `🔵 *Bank Term Loan:* ₹${calc.bank_loan_lakhs} Lakhs (${100 - calc.subsidy_rate_pct - calc.own_contribution_pct}%)\n` +
+    `🟡 *Owner Margin Money Contribution:* ₹${calc.own_contribution_lakhs} Lakhs (${calc.own_contribution_pct}%)\n` +
+    `💡 *Annual Bank Interest Saved:* ~₹${calc.interest_saved_annual_lakhs} Lakhs / year\n\n` +
+    `⚡ Generated by *Vyapaar Pulse AI Platform*.`
+  );
+
+  try {
+    const res = await fetch('/api/whatsapp/send-immediate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: '📊 MSME Project Subsidy Breakdown',
+        message: message,
+        urgency: 'info',
+        event_type: 'custom',
+        phone: phone
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ Calculation breakdown dispatched to WhatsApp!', 'success');
+      closeProjectCalculatorModal();
+      fetchWhatsAppHistory();
+    }
+  } catch (err) {
+    showToast('Failed to send WhatsApp alert', 'danger');
+  }
+}
+

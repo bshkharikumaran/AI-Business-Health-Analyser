@@ -377,10 +377,53 @@ def _voice_generate_campaign(theme="festival", discount_pct=15, product_name="Sa
     return {"spoken_text": f"Generated {theme} promotional campaign in {language.upper()} with {discount_pct}% discount.", "view": "whatsapp-automation", "data": campaign}
 
 
-def _voice_get_schemes(category=None, sector=None, turnover_lakhs=None, state=None):
-    updates = {"category": category, "sector": sector, "turnover_lakhs": turnover_lakhs, "state": state}
-    result = update_profile_and_match(updates)
-    return {"spoken_text": f"Matched {result['match_count']} government subsidy schemes for this enterprise.", "view": "dashboard", "data": result}
+def _voice_get_schemes(category=None, sector=None, turnover_lakhs=None, state=None, language=None):
+    current_state = _get_current_state()
+    profile = current_state.get("business_profile", {})
+    if category or sector or turnover_lakhs or state:
+        if category: profile["category"] = category
+        if sector: profile["sector"] = sector
+        if turnover_lakhs: profile["turnover_lakhs"] = turnover_lakhs
+        if state: profile["state"] = state
+        db.save_state(current_state)
+    
+    result = logic.match_schemes(profile)
+    top_scheme = result["matches"][0] if result["matches"] else None
+    
+    lang = (language or "en").lower()
+    if top_scheme:
+        name = top_scheme['name'].split(' —')[0]
+        subsidy = top_scheme['subsidy_pct']
+        max_sub = top_scheme['max_subsidy_lakhs']
+        count = result['match_count']
+        if "ta" in lang:
+            spoken = (
+                f"உங்கள் பிசினஸிற்கு மொத்தம் {count} அரசு மானியத் திட்டங்கள் பொருந்துகின்றன. "
+                f"இதில் மிகச் சிறந்தது {name} — {subsidy}% மூலதன மானியம் (அதிகபட்சம் ₹{max_sub} லட்சம் வரை) மற்றும் CGTMSE கடன் உத்தரவாதம் கிடைக்கும்."
+            )
+        elif "hi" in lang:
+            spoken = (
+                f"आपके व्यवसाय के लिए कुल {count} सरकारी योजनाएं उपयुक्त हैं। "
+                f"सबसे मुख्य योजना {name} है जिसमें {subsidy}% तक पूंजीगत सब्सिडी (अधिकतम ₹{max_sub} लाख) उपलब्ध है।"
+            )
+        elif "te" in lang:
+            spoken = (
+                f"మీ వ్యాపారానికి మొత్తం {count} ప్రభుత్వ పథకాలు వర్తిస్తాయి. "
+                f"ప్రధానమైనది {name} — {subsidy}% మూలధన సబ్సిడీ లభిస్తుంది."
+            )
+        elif "ml" in lang:
+            spoken = f"നിങ്ങളുടെ ബിസിനസ്സിന് {count} സർക്കാർ സബ്സിഡി പദ്ധതികൾ ലഭ്യമാണ്. പ്രധാന പദ്ധതി {name} ({subsidy}% സബ്സിഡി)."
+        elif "kn" in lang:
+            spoken = f"ನಿಮ್ಮ ವ್ಯವಹಾರಕ್ಕೆ ಒಟ್ಟು {count} ಸರಕಾರಿ ಯೋಜನೆಗಳು ಅನ್ವಯಿಸುತ್ತವೆ. ಮುಖ್ಯವಾದದ್ದು {name} ({subsidy}% ಸಬ್ಸಿಡಿ)."
+        else:
+            spoken = (
+                f"Found {count} highly eligible government subsidy schemes for your enterprise. "
+                f"Top recommended is {name} providing up to {subsidy}% capital subsidy (max ₹{max_sub} Lakhs) with zero collateral requirements."
+            )
+    else:
+        spoken = "No active government schemes matched the current filters."
+        
+    return {"spoken_text": spoken, "view": "govt-schemes", "data": result}
 
 
 def _voice_get_full_summary(language=None):
@@ -1233,6 +1276,127 @@ def api_generate_report():
     sections = body.get("sections", ["summary", "kpis", "analysis", "data_quality", "charts", "insights"])
     report = logic.build_executive_report(dataset_name, rows, sections)
     return jsonify(report)
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_auth_login():
+    body = request.get_json(force=True) or {}
+    email = body.get("email", "owner@chinnutextiles.in")
+    password = body.get("password", "")
+    role = body.get("role", "admin")
+    name = body.get("name", "Chinnu")
+    
+    state = _get_current_state()
+    profile = state.get("business_profile", {})
+    
+    user_payload = {
+        "id": "USR-01",
+        "name": profile.get("owner_name", name),
+        "business_name": profile.get("name", "Chinnu Textiles & Handlooms"),
+        "email": email,
+        "role": role,
+        "role_badge": "Store Owner & Executive Admin" if role == "admin" else "Business Analyst",
+        "phone": profile.get("phone", "+91 98765 43210"),
+        "authenticated": True,
+        "login_time": datetime.now().isoformat()
+    }
+    return jsonify({"success": True, "user": user_payload, "token": "vp_live_token_77a9"})
+
+
+@app.route("/api/business/profile", methods=["GET", "POST"])
+def api_business_profile():
+    state = _get_current_state()
+    if request.method == "POST":
+        body = request.get_json(force=True) or {}
+        profile = state.setdefault("business_profile", {})
+        profile.update(body)
+        db.save_state(state)
+        matched = logic.match_schemes(profile)
+        return jsonify({"success": True, "profile": profile, "matched_schemes": matched})
+    
+    profile = state.get("business_profile", {})
+    matched = logic.match_schemes(profile)
+    return jsonify({"success": True, "profile": profile, "matched_schemes": matched})
+
+
+@app.route("/api/schemes/all", methods=["GET"])
+def api_schemes_all():
+    state = _get_current_state()
+    profile = state.get("business_profile", {})
+    matched = logic.match_schemes(profile)
+    return jsonify({"success": True, "data": matched})
+
+
+@app.route("/api/schemes/match", methods=["POST"])
+def api_schemes_match():
+    body = request.get_json(force=True) or {}
+    matched = logic.match_schemes(body)
+    return jsonify({"success": True, "data": matched})
+
+
+@app.route("/api/schemes/compare", methods=["POST"])
+def api_schemes_compare():
+    body = request.get_json(force=True) or {}
+    scheme_ids = body.get("scheme_ids", ["pmegp", "cgtmse", "tn_needs"])
+    state = _get_current_state()
+    profile = state.get("business_profile", {})
+    comparison = logic.compare_schemes(scheme_ids, profile=profile)
+    return jsonify({"success": True, "comparison": comparison})
+
+
+@app.route("/api/schemes/calculator", methods=["POST"])
+def api_schemes_calculator():
+    body = request.get_json(force=True) or {}
+    project_cost = float(body.get("project_cost_lakhs", 25.0))
+    scheme_id = body.get("scheme_id", "pmegp")
+    state = _get_current_state()
+    profile = state.get("business_profile", {})
+    calc = logic.calculate_project_subsidy(project_cost, scheme_id=scheme_id, profile=profile)
+    return jsonify({"success": True, "data": calc})
+
+
+@app.route("/api/schemes/send-whatsapp", methods=["POST"])
+def api_schemes_send_whatsapp():
+    body = request.get_json(force=True) or {}
+    scheme_id = body.get("scheme_id", "pmegp")
+    state = _get_current_state()
+    profile = state.get("business_profile", {})
+    phone = body.get("phone") or profile.get("phone", "+91 98765 43210")
+    
+    schemes = logic._load_schemes()
+    scheme = next((s for s in schemes if s["id"] == scheme_id), None)
+    if not scheme:
+        return jsonify({"error": "Scheme not found"}), 404
+        
+    title = f"🏛️ Government Subsidy Guide: {scheme['name'].split(' —')[0]}"
+    message = (
+        f"Namaste {profile.get('owner_name', 'Chinnu')} Ji! Here is your tailored MSME Government Subsidy Brief:\n\n"
+        f"📌 Scheme: {scheme['name']}\n"
+        f"🏛️ Authority: {scheme['authority']}\n"
+        f"💰 Max Benefit: Up to {scheme.get('subsidy_pct', 0)}% Capital Subsidy ({scheme.get('collateral_required', 'Zero Collateral')})\n"
+        f"📄 Key Documents: {', '.join(scheme.get('documents_needed', [])[:3])}\n"
+        f"🌐 Apply Online: {scheme.get('link', 'https://msme.gov.in')}\n\n"
+        f"Empowering {profile.get('name', 'Your Enterprise')} via Vyapaar Pulse AI."
+    )
+    
+    log_entry = db.append_whatsapp_log({
+        "to": f"{profile.get('owner_name', 'Chinnu')} ({phone})",
+        "phone": phone,
+        "event_type": "scheme_guide",
+        "type": "scheme_guide",
+        "urgency": "info",
+        "title": title,
+        "message": message,
+        "status": "delivered",
+        "channel": "WhatsApp (Automated Bot)",
+        "timestamp": datetime.now().isoformat(timespec="seconds")
+    })
+    
+    return jsonify({
+        "success": True,
+        "message": f"Scheme guide dispatched to WhatsApp ({phone})",
+        "log": log_entry
+    })
 
 
 if __name__ == "__main__":

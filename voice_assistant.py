@@ -509,7 +509,18 @@ def _multilingual_rule_based_intent(transcript, executors):
     t = transcript.lower().strip()
     lang_code = _detect_language_code(transcript)
 
-    # 1. Regional Performance & Geographic Territory (Highest Priority)
+    # 1. Government Schemes & Subsidies (Highest Priority)
+    if any(k in t for k in [
+        "scheme", "government", "subsidy", "yojana", "maniam", "pmegp", "cgtmse", "mudra",
+        "thittam", "arasa", "arasan", "kadan", "needs scheme", "vishwakarma", "clcss", "zed",
+        "அரசு", "மானியம்", "திட்டம்", "திட்டங்கள்", "மானியத்", "அரசாங்க", "அரசாங்கம்",
+        "सरकारी", "योजना", "सब्सिडी", "పథకం", "పథకాలు", "సబ్సిడీ", "പദ്ധതി", "ಯೋಜನೆ"
+    ]):
+        res = executors["get_government_schemes"](language=lang_code[:2])
+        res["lang_code"] = lang_code
+        return res
+
+    # 2. Regional Performance & Geographic Territory
     if any(k in t for k in [
         "region", "regional", "territory", "area", "north america", "emea", "apac",
         "ரீஜியன்", "பிராந்தியம்", "பகுதி", "இடம்", "எந்த ரீஜியன்", "விற்பனை அதிகம்", "பெர்பார்மன்ஸ் அதிகமா",
@@ -724,9 +735,9 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 18. Government Schemes
-    if any(k in t for k in ["scheme", "government", "subsidy", "yojana", "maniam", "loan", "kadan", "pmegp", "cgtmse", "mudra"]):
-        res = executors["get_government_schemes"]()
+    # 18. Government Schemes & Subsidies
+    if any(k in t for k in ["scheme", "government", "subsidy", "yojana", "maniam", "loan", "kadan", "pmegp", "cgtmse", "mudra", "thittam", "arasa"]):
+        res = executors["get_government_schemes"](language=lang_code[:2])
         res["lang_code"] = lang_code
         return res
 

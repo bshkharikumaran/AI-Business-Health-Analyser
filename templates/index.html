@@ -87,6 +87,11 @@
           <i data-lucide="file-text"></i>
           <span>Reports</span>
         </button>
+        <button class="nav-link" data-view="govt-schemes" id="nav-govt-schemes">
+          <i data-lucide="landmark"></i>
+          <span>Govt Schemes</span>
+          <span class="nav-pill green pulse">MATCH</span>
+        </button>
         <button class="nav-link" data-view="saved-analysis" id="nav-saved-analysis">
           <i data-lucide="bookmark"></i>
           <span>Saved Analysis</span>
@@ -117,16 +122,16 @@
         <div class="dataset-sub" id="sidebarActiveDatasetMeta">24 records · 10 columns · 100% Clean</div>
       </div>
       
-      <div class="sidebar-user-mini">
-        <div class="user-avatar-small">
-          <span>SJ</span>
+      <div class="sidebar-user-mini" onclick="openAuthModal('login')" title="Click to Switch Account or Onboard Enterprise" style="cursor: pointer;">
+        <div class="user-avatar-small" id="sidebarUserAvatar">
+          <span>CH</span>
         </div>
         <div class="user-info-small">
-          <div class="user-name">Sanjay Raman</div>
-          <div class="user-role">Principal BI Lead</div>
+          <div class="user-name" id="sidebarUserName">Chinnu</div>
+          <div class="user-role" id="sidebarUserRole">Store Owner (MSME)</div>
         </div>
-        <button class="icon-btn-ghost" title="Logout" onclick="showToast('Logged in as Sanjay Raman (Admin)', 'info')">
-          <i data-lucide="log-out"></i>
+        <button class="icon-btn-ghost" title="Switch User / Onboard" onclick="event.stopPropagation(); openAuthModal('login')">
+          <i data-lucide="log-in"></i>
         </button>
       </div>
     </div>
@@ -244,22 +249,23 @@
         <!-- User Profile Dropdown -->
         <div class="user-menu-wrapper">
           <button class="user-avatar-btn" onclick="toggleUserDropdown()" title="User Profile">
-            <div class="avatar-ring">
-              <span>SJ</span>
+            <div class="avatar-ring" id="topbarAvatarRing">
+              <span id="topbarUserInitials">CH</span>
             </div>
           </button>
           <div class="dropdown-menu user-dropdown" id="userDropdown">
             <div class="user-dropdown-header">
-              <div class="user-name">Sanjay Raman</div>
-              <div class="user-email">sanjay.raman@enterprise.ai</div>
-              <div class="user-role-badge">Executive Administrator</div>
+              <div class="user-name" id="topbarUserName">Chinnu</div>
+              <div class="user-email" id="topbarUserEmail">owner@chinnutextiles.in</div>
+              <div class="user-role-badge" id="topbarUserRoleBadge">Store Owner & MSME Admin</div>
             </div>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item" onclick="switchView('profile')"><i data-lucide="user"></i> Account Settings</button>
-            <button class="dropdown-item" onclick="switchView('settings')"><i data-lucide="sliders"></i> Workspace Config</button>
-            <button class="dropdown-item" onclick="switchView('data-sources')"><i data-lucide="key"></i> API Keys & Webhooks</button>
+            <button class="dropdown-item" onclick="openAuthModal('onboard')"><i data-lucide="building-2"></i> Edit Business Profile</button>
+            <button class="dropdown-item" onclick="switchView('govt-schemes')"><i data-lucide="landmark"></i> Government Schemes Hub</button>
+            <button class="dropdown-item" onclick="switchView('settings')"><i data-lucide="sliders"></i> Platform Settings</button>
+            <button class="dropdown-item" onclick="openAuthModal('login')"><i data-lucide="users"></i> Switch User / Account</button>
             <div class="dropdown-divider"></div>
-            <button class="dropdown-item text-danger" onclick="showToast('Logged out of session', 'info')"><i data-lucide="log-out"></i> Log Out</button>
+            <button class="dropdown-item text-danger" onclick="logoutUser()"><i data-lucide="log-out"></i> Log Out</button>
           </div>
         </div>
       </div>
@@ -2089,6 +2095,124 @@
         </div>
       </section>
 
+      <!-- ===================================================================== -->
+      <!-- VIEW 11: GOVERNMENT SCHEMES & SUBSIDY COMPARATOR                      -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-govt-schemes">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Intelligence & Outputs / Government Schemes Hub</div>
+            <h1 class="view-title">
+              <i data-lucide="landmark" class="title-icon green"></i>
+              MSME Government Schemes & Subsidy Comparator
+            </h1>
+            <p class="view-description">Automated eligibility evaluation, capital subsidy calculations, document checklists, and side-by-side comparison across Central & State MSME schemes.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-secondary" onclick="openProjectCalculatorModal()">
+              <i data-lucide="calculator"></i>
+              <span>Project Subsidy Calculator</span>
+            </button>
+            <button class="btn-primary" onclick="openAuthModal('onboard')">
+              <i data-lucide="building-2"></i>
+              <span>Update Business Profile</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Business Eligibility Hero Banner -->
+        <div class="scheme-hero-card" id="schemeHeroBanner">
+          <div class="shc-header">
+            <div class="shc-profile-badge">
+              <span class="pulse-dot green"></span>
+              <span class="shc-bold" id="shcBusinessName">Chinnu Textiles & Handlooms</span>
+              <span class="shc-tag" id="shcCategoryTag">Micro Enterprise</span>
+              <span class="shc-tag" id="shcSectorTag">Textiles</span>
+              <span class="shc-tag" id="shcStateTag">Tamil Nadu</span>
+              <span class="shc-tag special" id="shcInclusivityTag">Women-Owned</span>
+              <span class="shc-tag udyam" id="shcUdyamTag">Udyam Active</span>
+            </div>
+            <button class="btn-xs-outline" onclick="openAuthModal('onboard')">
+              <i data-lucide="edit-3"></i> Edit Parameters
+            </button>
+          </div>
+
+          <div class="shc-stats-grid">
+            <div class="shc-stat-box highlight">
+              <div class="shc-stat-label">Total Potential Assistance</div>
+              <div class="shc-stat-value" id="shcTotalSubsidyVal">₹32.50 L</div>
+              <div class="shc-stat-sub">Capital Subsidies & Grants</div>
+            </div>
+            <div class="shc-stat-box">
+              <div class="shc-stat-label">Matched Government Schemes</div>
+              <div class="shc-stat-value text-success" id="shcMatchedCountVal">8 Schemes</div>
+              <div class="shc-stat-sub">100% Eligible Central & State</div>
+            </div>
+            <div class="shc-stat-box">
+              <div class="shc-stat-label">Max Single Capital Grant</div>
+              <div class="shc-stat-value text-primary" id="shcMaxSingleGrantVal">₹17.50 L</div>
+              <div class="shc-stat-sub">PMEGP 35% Margin Money</div>
+            </div>
+            <div class="shc-stat-box">
+              <div class="shc-stat-label">Collateral-Free Credit Facility</div>
+              <div class="shc-stat-value text-warning" id="shcMaxGuaranteeVal">₹5.00 Cr</div>
+              <div class="shc-stat-sub">Covered via CGTMSE 85%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls Strip -->
+        <div class="schemes-filter-bar">
+          <div class="sfb-search">
+            <i data-lucide="search"></i>
+            <input type="text" id="schemeSearchInput" placeholder="Search schemes by name, keyword, authority, document..." oninput="handleSchemeSearch(this.value)">
+          </div>
+          <div class="sfb-filters">
+            <select class="form-select-sm" id="schemeTypeFilter" onchange="filterSchemesList()">
+              <option value="ALL">All Financial Types</option>
+              <option value="Capital Subsidy">Capital Subsidy & Grants</option>
+              <option value="Credit Guarantee">Collateral-Free Guarantee</option>
+              <option value="Micro Credit">Micro Credit (MUDRA)</option>
+              <option value="Inclusivity Grant">Inclusivity & Artisan Grants</option>
+              <option value="Quality & Tech Grant">Quality & ZED Tech Grants</option>
+            </select>
+            <select class="form-select-sm" id="schemeAuthorityFilter" onchange="filterSchemesList()">
+              <option value="ALL">All Authorities</option>
+              <option value="Central MSME">Central Govt (MoMSME / KVIC)</option>
+              <option value="Tamil Nadu">Tamil Nadu State Govt</option>
+              <option value="SIDBI">SIDBI / Finance Ministry</option>
+            </select>
+            <select class="form-select-sm" id="schemeMatchLevelFilter" onchange="filterSchemesList()">
+              <option value="ALL">All Match Levels</option>
+              <option value="100">100% Eligible Only</option>
+              <option value="80">High Match (>80%)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Schemes Cards Dynamic Grid -->
+        <div class="schemes-grid" id="schemesCardsContainer">
+          <!-- Populated dynamically via renderGovtSchemesHub() -->
+        </div>
+
+        <!-- Floating Side-by-Side Scheme Comparison Tray -->
+        <div class="comparison-floating-tray" id="comparisonFloatingTray" style="display: none;">
+          <div class="cft-left">
+            <div class="cft-title"><i data-lucide="scale"></i> Scheme Comparator</div>
+            <div class="cft-items" id="comparisonTrayItems">
+              <!-- Selected scheme tags rendered here -->
+            </div>
+          </div>
+          <div class="cft-right">
+            <button class="btn-ghost-sm" onclick="clearComparisonSelection()">Clear</button>
+            <button class="btn-primary-sm" onclick="openSchemeComparisonModal()">
+              <i data-lucide="columns-2"></i> Compare Selected (<span id="comparisonCountBadge">0</span>)
+            </button>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
@@ -2656,6 +2780,309 @@
       <!-- Send Text Button -->
       <button class="ai-send-btn" id="aiSendBtn" onclick="sendAssistantTextMessage()" title="Send Message">
         <i data-lucide="send"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: AUTHENTICATION & BUSINESS PROFILE ONBOARDING WIZARD                -->
+<!-- ========================================================================= -->
+<div class="modal-overlay auth-modal-overlay" id="authModal" onclick="closeOnOverlayClick(event, 'authModal')">
+  <div class="modal-container auth-modal-box">
+    <!-- Modal Header -->
+    <div class="auth-modal-header">
+      <div class="auth-brand">
+        <div class="logo-icon-auth"><i data-lucide="building-2"></i></div>
+        <div>
+          <h2 class="auth-title">Vyapaar Pulse AI</h2>
+          <p class="auth-subtitle">Enterprise MSME Health & Government Scheme Gateway</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeAuthModal()"><i data-lucide="x"></i></button>
+    </div>
+
+    <!-- Auth Tabs Navigation -->
+    <div class="auth-nav-tabs">
+      <button class="auth-tab-btn active" id="authTabLoginBtn" onclick="switchAuthTab('login')">
+        <i data-lucide="log-in"></i> Sign In to Workspace
+      </button>
+      <button class="auth-tab-btn" id="authTabOnboardBtn" onclick="switchAuthTab('onboard')">
+        <i data-lucide="sparkles"></i> Business Onboarding & Scheme Setup
+      </button>
+    </div>
+
+    <!-- TAB 1: USER SIGN IN -->
+    <div class="auth-tab-content" id="authTabLogin">
+      <div class="quick-demo-section">
+        <div class="section-hint">⚡ 1-Click Quick Demo Sign In:</div>
+        <div class="demo-users-grid">
+          <button class="demo-user-btn" onclick="quickLoginDemo('chinnu')">
+            <div class="demo-avatar green">CH</div>
+            <div class="demo-info">
+              <div class="demo-name">Chinnu (Store Owner)</div>
+              <div class="demo-sub">Chinnu Textiles · Salem, TN</div>
+            </div>
+            <span class="demo-badge">Primary MSME</span>
+          </button>
+          <button class="demo-user-btn" onclick="quickLoginDemo('sanjay')">
+            <div class="demo-avatar blue">SJ</div>
+            <div class="demo-info">
+              <div class="demo-name">Sanjay Raman (BI Lead)</div>
+              <div class="demo-sub">Principal Analytics · Admin</div>
+            </div>
+            <span class="demo-badge">Admin</span>
+          </button>
+          <button class="demo-user-btn" onclick="quickLoginDemo('ananya')">
+            <div class="demo-avatar purple">AP</div>
+            <div class="demo-info">
+              <div class="demo-name">Ananya Patel (Analyst)</div>
+              <div class="demo-sub">Data Intelligence Specialist</div>
+            </div>
+            <span class="demo-badge">Analyst</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-divider"><span>OR SIGN IN WITH CREDENTIALS</span></div>
+
+      <form id="loginForm" onsubmit="event.preventDefault(); handleManualLogin();">
+        <div class="form-group">
+          <label class="form-label">Business Email / Phone</label>
+          <input type="text" class="form-input" id="loginEmail" value="owner@chinnutextiles.in" placeholder="name@business.com or mobile">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label">Password / Security PIN</label>
+          <input type="password" class="form-input" id="loginPassword" value="••••••••" placeholder="Enter password">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label">Account Role</label>
+          <select class="form-select" id="loginRole">
+            <option value="admin" selected>Store Owner & Executive Admin</option>
+            <option value="analyst">Data Analyst & Operations</option>
+            <option value="viewer">Executive Viewer</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary btn-block mt-4">
+          <i data-lucide="check-circle-2"></i> Sign In to Enterprise Platform
+        </button>
+      </form>
+    </div>
+
+    <!-- TAB 2: BUSINESS ONBOARDING & SCHEME SETUP (3-STEP WIZARD) -->
+    <div class="auth-tab-content hidden" id="authTabOnboard">
+      <!-- Wizard Step Indicator -->
+      <div class="wizard-steps-strip">
+        <div class="w-step active" id="wStep1"><span>1</span> Identity</div>
+        <div class="w-step-line"></div>
+        <div class="w-step" id="wStep2"><span>2</span> MSME Scale</div>
+        <div class="w-step-line"></div>
+        <div class="w-step" id="wStep3"><span>3</span> Subsidies</div>
+      </div>
+
+      <form id="onboardingForm" onsubmit="event.preventDefault(); submitBusinessOnboarding();">
+        <!-- STEP 1: BUSINESS IDENTITY -->
+        <div class="wizard-pane" id="wizardPane1">
+          <h4 class="wizard-pane-title">Step 1: Business Identity & Contact</h4>
+          <div class="form-grid-2 mt-3">
+            <div class="form-group">
+              <label class="form-label">Legal Business Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-input" id="onboardBusinessName" value="Chinnu Textiles & Handlooms" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Owner / Entrepreneur Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-input" id="onboardOwnerName" value="Chinnu" required>
+            </div>
+          </div>
+          <div class="form-grid-2 mt-3">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Alert Phone <span class="text-danger">*</span></label>
+              <input type="text" class="form-input" id="onboardPhone" value="+91 98765 43210" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Business Email</label>
+              <input type="email" class="form-input" id="onboardEmail" value="owner@chinnutextiles.in">
+            </div>
+          </div>
+          <div class="wizard-actions mt-4">
+            <div></div>
+            <button type="button" class="btn-primary" onclick="goToWizardStep(2)">
+              Next: MSME Scale & Turnover <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: MSME SCALE & OPERATIONS -->
+        <div class="wizard-pane hidden" id="wizardPane2">
+          <h4 class="wizard-pane-title">Step 2: MSME Categorization & Financial Scale</h4>
+          <div class="form-grid-2 mt-3">
+            <div class="form-group">
+              <label class="form-label">Enterprise Category</label>
+              <select class="form-select" id="onboardCategory">
+                <option value="micro" selected>Micro (Turnover &lt; ₹5 Cr · Inv &lt; ₹1 Cr)</option>
+                <option value="small">Small (Turnover &lt; ₹50 Cr · Inv &lt; ₹10 Cr)</option>
+                <option value="medium">Medium (Turnover &lt; ₹250 Cr)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Industry Sector</label>
+              <select class="form-select" id="onboardSector">
+                <option value="textiles" selected>Textiles, Sarees & Handlooms</option>
+                <option value="manufacturing">Manufacturing & Engineering</option>
+                <option value="retail">Retail Store & E-Commerce</option>
+                <option value="trading">Wholesale Trading & Distribution</option>
+                <option value="agriculture">Agro & Food Processing</option>
+                <option value="service">Services / IT & Consulting</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-3 mt-3">
+            <div class="form-group">
+              <label class="form-label">Annual Turnover (₹ Lakhs)</label>
+              <input type="number" step="0.5" class="form-input" id="onboardTurnover" value="68.0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plant & Machinery Inv (₹L)</label>
+              <input type="number" step="0.5" class="form-input" id="onboardInvestment" value="18.5" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Employees</label>
+              <input type="number" class="form-input" id="onboardEmployees" value="12">
+            </div>
+          </div>
+          <div class="wizard-actions mt-4">
+            <button type="button" class="btn-secondary" onclick="goToWizardStep(1)">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+            <button type="button" class="btn-primary" onclick="goToWizardStep(3)">
+              Next: Location & Inclusivity <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: LOCATION & SUBSIDY MULTIPLIERS -->
+        <div class="wizard-pane hidden" id="wizardPane3">
+          <h4 class="wizard-pane-title">Step 3: Location & Special Subsidy Multipliers</h4>
+          <div class="form-grid-2 mt-3">
+            <div class="form-group">
+              <label class="form-label">State Jurisdiction</label>
+              <select class="form-select" id="onboardState">
+                <option value="Tamil Nadu" selected>Tamil Nadu (Unlocks NEEDS Scheme)</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Delhi">Delhi NCR</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Telangana">Telangana</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">District / City</label>
+              <input type="text" class="form-input" id="onboardCity" value="Salem">
+            </div>
+          </div>
+
+          <div class="subsidy-checkboxes-box mt-3">
+            <div class="subsidy-check-item">
+              <input type="checkbox" id="onboardUdyam" checked>
+              <label for="onboardUdyam"><strong>Udyam Aadhaar Registered</strong> (Required for all central subsidies)</label>
+            </div>
+            <div class="subsidy-check-item">
+              <input type="checkbox" id="onboardGST" checked>
+              <label for="onboardGST"><strong>GST Registered</strong> (Unlocks 2% Interest Subvention Scheme)</label>
+            </div>
+            <div class="subsidy-check-item highlight">
+              <input type="checkbox" id="onboardWomen" checked>
+              <label for="onboardWomen"><strong>Women Entrepreneur Owned</strong> (Unlocks 35% PMEGP & Stand-Up India Grant)</label>
+            </div>
+            <div class="subsidy-check-item">
+              <input type="checkbox" id="onboardRural" checked>
+              <label for="onboardRural"><strong>Rural / Semi-Urban Unit</strong> (Higher subsidy ceiling)</label>
+            </div>
+          </div>
+
+          <div class="wizard-actions mt-4">
+            <button type="button" class="btn-secondary" onclick="goToWizardStep(2)">
+              <i data-lucide="arrow-left"></i> Back
+            </button>
+            <button type="submit" class="btn-primary">
+              <i data-lucide="check"></i> Save & Match Government Schemes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: SIDE-BY-SIDE SCHEME COMPARATOR MATRIX                              -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="schemeComparisonModal" onclick="closeOnOverlayClick(event, 'schemeComparisonModal')">
+  <div class="modal-container modal-xl">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title"><i data-lucide="scale"></i> Side-by-Side Government Scheme Comparison</h3>
+        <p class="modal-subtitle">Compare financial caps, collateral requirements, subsidies, and interest subvention.</p>
+      </div>
+      <button class="modal-close" onclick="closeSchemeComparisonModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body p-0">
+      <div class="table-responsive" id="schemeComparisonTableContainer">
+        <!-- Rendered dynamically via renderComparisonMatrix() -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeSchemeComparisonModal()">Close</button>
+      <button class="btn-primary" onclick="openProjectCalculatorModal()">
+        <i data-lucide="calculator"></i> Open Subsidy Project Calculator
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: INTERACTIVE PROJECT SUBSIDY & MARGIN MONEY CALCULATOR              -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="schemeCalculatorModal" onclick="closeOnOverlayClick(event, 'schemeCalculatorModal')">
+  <div class="modal-container modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title"><i data-lucide="calculator"></i> Project Subsidy & Margin Money Calculator</h3>
+        <p class="modal-subtitle">Simulate own margin money vs bank term loan vs direct non-repayable government grants.</p>
+      </div>
+      <button class="modal-close" onclick="closeProjectCalculatorModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Total Proposed Project / Machinery Cost (₹ Lakhs)</label>
+          <input type="number" step="1.0" class="form-input" id="calcProjectCostInput" value="25.0" min="1" max="500" oninput="recomputeProjectSubsidy()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Government Scheme</label>
+          <select class="form-select" id="calcSchemeSelect" onchange="recomputeProjectSubsidy()">
+            <option value="pmegp" selected>PMEGP (35% Margin Money Subsidy)</option>
+            <option value="tn_needs">Tamil Nadu NEEDS (25% Subsidy + 3% Rebate)</option>
+            <option value="clcss">CLCSS (15% Upfront Tech Grant)</option>
+            <option value="zed">ZED (80% Quality & Eco Grant)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Live Calculation Breakdown Display -->
+      <div class="calc-results-hero mt-4" id="calcResultsHero">
+        <!-- Rendered dynamically via renderProjectSubsidyResults() -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeProjectCalculatorModal()">Close</button>
+      <button class="btn-primary" onclick="sendActiveCalculatorToWhatsApp()">
+        <i data-lucide="send"></i> Send Breakdown to WhatsApp
       </button>
     </div>
   </div>

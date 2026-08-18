@@ -407,91 +407,232 @@ _SCHEMES = _load_schemes()
 
 
 def match_schemes(profile):
-    """Matches business profile with eligible central and state schemes."""
-    category = str(profile.get("category", "small")).lower()
-    sector = str(profile.get("sector", "retail")).lower()
+    """
+    Advanced Multi-Factor MSME Government Schemes Matcher.
+    Evaluates Category, Sector, Turnover, Investment, State, Registration, and Special Inclusivity.
+    Returns ranked matched schemes with match score %, estimated subsidy amount, and tailored reasons.
+    """
+    schemes = _load_schemes()
+    category = str(profile.get("category", "micro")).lower()
+    sector = str(profile.get("sector", "textiles")).lower()
     turnover = float(profile.get("turnover_lakhs", 68.0))
+    investment = float(profile.get("investment_lakhs", 18.5))
     state = str(profile.get("state", "Tamil Nadu"))
+    is_udyam = bool(profile.get("udyam_registered", True))
+    is_women = bool(profile.get("is_women_owned", True))
+    is_sc_st = bool(profile.get("is_sc_st", False))
+    is_rural = bool(profile.get("is_rural", True))
+
+    # Working capital / project capital need baseline (22-25% of turnover)
+    estimated_need = round(max(5.0, turnover * 0.25), 2)
 
     matches = []
-    for s in _SCHEMES:
-        if category not in [c.lower() for c in s.get("eligible_category", [])]:
-            continue
-        if sector not in [sec.lower() for sec in s.get("eligible_sector", [])]:
-            continue
-        if not (s.get("min_turnover_lakhs", 0) <= turnover <= s.get("max_turnover_lakhs", 999999)):
-            continue
-        if s.get("states") != ["ALL"] and state not in s.get("states", []):
-            continue
+    for s in schemes:
+        score = 0
+        match_factors = []
+        
+        # 1. Category Fit (30 pts)
+        el_cats = [c.lower() for c in s.get("eligible_category", [])]
+        if category in el_cats:
+            score += 30
+            match_factors.append(f"{category.capitalize()} Category")
+        else:
+            score -= 20
+
+        # 2. Sector Fit (30 pts)
+        el_secs = [sec.lower() for sec in s.get("eligible_sector", [])]
+        if sector in el_secs or ("manufacturing" in el_secs and sector in ["textiles", "handloom", "agriculture", "retail"]):
+            score += 30
+            match_factors.append(f"{sector.capitalize()} Sector")
+        elif any(k in el_secs for k in ["trading", "service", "retail"]):
+            score += 15
+        else:
+            score -= 15
+
+        # 3. Turnover & Investment Range (20 pts)
+        min_t = s.get("min_turnover_lakhs", 0)
+        max_t = s.get("max_turnover_lakhs", 999999)
+        if min_t <= turnover <= max_t:
+            score += 20
+        else:
+            score -= 20
+
+        # 4. State Jurisdiction (10 pts)
+        states = s.get("states", ["ALL"])
+        if states == ["ALL"] or state in states:
+            score += 10
+            if state in states and states != ["ALL"]:
+                match_factors.append(f"{state} State Scheme")
+        else:
+            continue  # Exclude state schemes belonging to other states
+
+        # 5. Inclusivity & Multipliers (10 pts bonus)
+        if (is_women or is_sc_st or is_rural) and s.get("id") in ["pmegp", "stand_up_india", "pm_vishwakarma", "cgtmse"]:
+            score += 10
+            match_factors.append("Women / Rural Entrepreneur Multiplier")
+
+        # Normalize score to 50% - 100%
+        match_score_pct = max(50, min(100, score))
+
+        # Dynamic Subsidy & Loan Grant calculations
+        subsidy_pct = float(s.get("subsidy_pct", 0.0))
+        if s.get("id") == "pmegp" and (is_women or is_sc_st or is_rural):
+            subsidy_pct = 35.0
+        elif s.get("id") == "pmegp":
+            subsidy_pct = 25.0
+
+        max_subsidy = float(s.get("max_subsidy_lakhs", 0.0))
+        est_subsidy = round(min(max_subsidy, estimated_need * (subsidy_pct / 100.0)), 2) if subsidy_pct > 0 else 0.0
+        max_loan = float(s.get("max_loan_lakhs", 10.0))
+        est_loan = round(min(max_loan, estimated_need), 2)
 
         why = s.get("why_template", "").format(
-            category=category, sector=sector, name_lower=s.get("name", "").split(" \u2014")[0]
+            category=category,
+            sector=sector,
+            turnover=turnover,
+            name_lower=s.get("name", "").split(" —")[0]
         )
+
         matches.append({
             "id": s.get("id"),
             "name": s.get("name"),
             "authority": s.get("authority"),
+            "scheme_type": s.get("scheme_type", "Capital Subsidy"),
             "summary": s.get("summary"),
+            "match_score_pct": match_score_pct,
+            "match_badge": "100% Eligible" if match_score_pct >= 95 else ("90% High Match" if match_score_pct >= 80 else "Eligible"),
+            "subsidy_pct": subsidy_pct,
+            "max_subsidy_lakhs": max_subsidy,
+            "estimated_subsidy_lakhs": est_subsidy,
+            "max_loan_lakhs": max_loan,
+            "estimated_loan_lakhs": est_loan,
+            "guarantee_coverage_pct": s.get("guarantee_coverage_pct", 85.0),
+            "interest_subvention_pct": s.get("interest_subvention_pct", 0.0),
+            "collateral_required": s.get("collateral_required", "Zero Collateral"),
+            "processing_days": s.get("processing_days", "15 to 30 Days"),
+            "documents_needed": s.get("documents_needed", ["Udyam Certificate", "Project Report", "Aadhaar & PAN"]),
+            "key_benefits": s.get("key_benefits", []),
+            "match_factors": match_factors,
             "why_it_fits": why,
-            "link": s.get("link"),
+            "link": s.get("link", "https://msme.gov.in")
         })
 
-    return {"profile": profile, "matches": matches, "match_count": len(matches)}
+    # Sort matches by match_score_pct (descending)
+    matches.sort(key=lambda x: (x["match_score_pct"], x["estimated_subsidy_lakhs"]), reverse=True)
 
-
-def calculate_scheme_benefits(profile, scheme_id=None):
-    """
-    Calculates estimated ₹ subsidy savings, loan coverage, and required checklist.
-    """
-    turnover = float(profile.get("turnover_lakhs", 68.0))
-    category = str(profile.get("category", "small")).lower()
-    
-    # Capital loan estimate (typical MSME working capital = 20-25% of annual turnover)
-    estimated_loan_need = round(turnover * 0.22, 2)  # in Lakhs
-
-    benefits = {
-        "pmegp": {
-            "name": "PMEGP (Prime Minister Employment Generation Programme)",
-            "subsidy_pct": 25 if profile.get("state") == "Tamil Nadu" else 35,
-            "max_subsidy_lakhs": 12.5,
-            "estimated_subsidy_lakhs": min(12.5, round(estimated_loan_need * 0.25, 2)),
-            "interest_subvention_pct": 0.0,
-            "documents_needed": ["Udyam Registration Certificate", "Project Report / CMA Data", "Aadhaar & PAN Card", "Caste / Special Category Proof (if applicable)"]
-        },
-        "cgtmse": {
-            "name": "CGTMSE Collateral-Free Credit Guarantee",
-            "subsidy_pct": 0.0,
-            "max_subsidy_lakhs": 0.0,
-            "guarantee_coverage_pct": 85 if category == "micro" else 75,
-            "estimated_guarantee_amount_lakhs": min(500.0, round(estimated_loan_need, 2)),
-            "interest_subvention_pct": 1.5,
-            "documents_needed": ["Udyam Certificate", "Last 2 Years ITR & Balance Sheet", "GST Returns (GSTR-3B)", "Bank Statement (12 Months)"]
-        },
-        "clcss": {
-            "name": "Credit Linked Capital Subsidy Scheme (CLCSS)",
-            "subsidy_pct": 15.0,
-            "max_subsidy_lakhs": 15.0,
-            "estimated_subsidy_lakhs": min(15.0, round(estimated_loan_need * 0.15, 2)),
-            "interest_subvention_pct": 0.0,
-            "documents_needed": ["Udyam Certificate", "Machinery Quotation / Invoice", "Bank Term Loan Sanction Letter"]
-        },
-        "zed": {
-            "name": "MSME Sustainable (ZED) Certification Scheme",
-            "subsidy_pct": 80.0 if category == "micro" else (60.0 if category == "small" else 50.0),
-            "max_subsidy_lakhs": 5.0,
-            "estimated_subsidy_lakhs": 3.0,
-            "interest_subvention_pct": 0.5,
-            "documents_needed": ["Udyam Certificate", "Self-Assessment Pledge", "Quality/Safety Audit Evidence"]
-        }
-    }
-
-    if scheme_id and scheme_id.lower() in benefits:
-        return {"scheme_id": scheme_id, "turnover_lakhs": turnover, "benefit_details": benefits[scheme_id.lower()]}
+    total_potential_subsidy = round(sum(m["estimated_subsidy_lakhs"] for m in matches), 2)
+    max_single_grant = max([m["estimated_subsidy_lakhs"] for m in matches] or [0.0])
 
     return {
-        "turnover_lakhs": turnover,
-        "estimated_working_capital_need_lakhs": estimated_loan_need,
-        "all_benefits": benefits
+        "profile": profile,
+        "matches": matches,
+        "match_count": len(matches),
+        "total_potential_subsidy_lakhs": total_potential_subsidy,
+        "max_single_grant_lakhs": max_single_grant,
+        "estimated_working_capital_need_lakhs": estimated_need
+    }
+
+
+def compare_schemes(scheme_ids, profile=None):
+    """
+    Builds an interactive side-by-side comparison matrix for selected scheme IDs.
+    """
+    schemes = _load_schemes()
+    matched_data = match_schemes(profile or {})
+    matched_dict = {m["id"]: m for m in matched_data["matches"]}
+
+    selected = []
+    for sid in scheme_ids:
+        if sid in matched_dict:
+            selected.append(matched_dict[sid])
+        else:
+            s_raw = next((s for s in schemes if s["id"] == sid), None)
+            if s_raw:
+                selected.append({
+                    "id": s_raw["id"],
+                    "name": s_raw["name"],
+                    "authority": s_raw["authority"],
+                    "scheme_type": s_raw.get("scheme_type", "Scheme"),
+                    "match_score_pct": 85,
+                    "subsidy_pct": s_raw.get("subsidy_pct", 0),
+                    "max_subsidy_lakhs": s_raw.get("max_subsidy_lakhs", 0),
+                    "max_loan_lakhs": s_raw.get("max_loan_lakhs", 10),
+                    "interest_subvention_pct": s_raw.get("interest_subvention_pct", 0),
+                    "collateral_required": s_raw.get("collateral_required", "None"),
+                    "processing_days": s_raw.get("processing_days", "20 Days"),
+                    "documents_needed": s_raw.get("documents_needed", []),
+                    "link": s_raw.get("link", "https://msme.gov.in")
+                })
+
+    comparison_fields = [
+        {"key": "scheme_type", "label": "Financial Type"},
+        {"key": "match_score_pct", "label": "Eligibility Fit", "suffix": "%"},
+        {"key": "subsidy_pct", "label": "Government Subsidy %", "suffix": "%"},
+        {"key": "max_subsidy_lakhs", "label": "Max Subsidy Cap", "prefix": "₹", "suffix": " Lakhs"},
+        {"key": "max_loan_lakhs", "label": "Max Loan / Guarantee Cap", "prefix": "₹", "suffix": " Lakhs"},
+        {"key": "interest_subvention_pct", "label": "Interest Rebate Subvention", "suffix": "%"},
+        {"key": "collateral_required", "label": "Collateral Security Required"},
+        {"key": "processing_days", "label": "Turnaround / Processing Time"},
+    ]
+
+    return {
+        "selected_schemes": selected,
+        "comparison_fields": comparison_fields,
+        "count": len(selected)
+    }
+
+
+def calculate_project_subsidy(project_cost_lakhs, scheme_id="pmegp", profile=None):
+    """
+    Interactive Project Subsidy & Margin Money Breakdown Calculator.
+    """
+    cost = float(project_cost_lakhs)
+    prof = profile or {}
+    is_women = bool(prof.get("is_women_owned", True))
+    is_sc_st = bool(prof.get("is_sc_st", False))
+    is_rural = bool(prof.get("is_rural", True))
+
+    if scheme_id == "pmegp":
+        subsidy_rate = 35.0 if (is_women or is_sc_st or is_rural) else 25.0
+        own_rate = 5.0 if (is_women or is_sc_st or is_rural) else 10.0
+        scheme_name = "PMEGP (Prime Minister's Employment Generation Programme)"
+    elif scheme_id == "tn_needs":
+        subsidy_rate = 25.0
+        own_rate = 10.0
+        scheme_name = "Tamil Nadu NEEDS Scheme"
+    elif scheme_id == "clcss":
+        subsidy_rate = 15.0
+        own_rate = 15.0
+        scheme_name = "CLCSS Technology Upgradation Scheme"
+    elif scheme_id == "zed":
+        subsidy_rate = 80.0
+        own_rate = 20.0
+        scheme_name = "ZED Quality Certification Grant"
+    else:
+        subsidy_rate = 25.0
+        own_rate = 10.0
+        scheme_name = "Government MSME Subsidy Scheme"
+
+    subsidy_amount = round(cost * (subsidy_rate / 100.0), 2)
+    own_contribution = round(cost * (own_rate / 100.0), 2)
+    bank_loan = round(cost - subsidy_amount - own_contribution, 2)
+    interest_saved_annual = round(subsidy_amount * 0.095, 2)  # Assuming 9.5% bank interest saved
+
+    return {
+        "project_cost_lakhs": cost,
+        "scheme_id": scheme_id,
+        "scheme_name": scheme_name,
+        "subsidy_rate_pct": subsidy_rate,
+        "subsidy_amount_lakhs": subsidy_amount,
+        "own_contribution_pct": own_rate,
+        "own_contribution_lakhs": own_contribution,
+        "bank_loan_lakhs": bank_loan,
+        "interest_saved_annual_lakhs": interest_saved_annual,
+        "breakdown": [
+            {"label": "Direct Govt Subsidy (Non-Repayable Grant)", "amount_lakhs": subsidy_amount, "pct": subsidy_rate, "color": "#10b981"},
+            {"label": "Bank Term Loan (Low Interest EMI)", "amount_lakhs": bank_loan, "pct": round(100 - subsidy_rate - own_rate, 1), "color": "#3b82f6"},
+            {"label": "Owner Equity / Margin Money", "amount_lakhs": own_contribution, "pct": own_rate, "color": "#f59e0b"}
+        ]
     }
 
 

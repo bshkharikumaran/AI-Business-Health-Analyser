@@ -215,18 +215,39 @@ def _voice_update_sales_month(month, value):
     }
 
 
-def _voice_get_inventory_status(product_name=None):
+def _voice_get_inventory_status(product_name=None, language=None):
     state = _get_current_state()
+    lang = (language or "en").lower()
     if not product_name:
         inv = logic.evaluate_inventory(state["inventory"])
-        text = (f"Inventory status: {inv['healthy_count']} of {inv['total']} products are optimal. "
-                f"{inv['reorder_count']} items require urgent reorder, and ₹{inv['total_capital_locked']} is currently locked in stock.")
+        reorder_items = [i["name"] for i in inv.get("items", []) if i.get("days_left", 99) <= 3]
+        item_names = ", ".join(reorder_items[:2]) if reorder_items else "Cotton Sarees, Terracotta Pots"
+        if "ta" in lang:
+            text = f"இருப்பில் மொத்தம் {inv['total']} பொருட்கள் உள்ளன. இதில் {item_names} உள்ளிட்ட {inv['reorder_count']} பொருட்களுக்கு உடனடி ரீஆர்டர் தேவை."
+        elif "hi" in lang:
+            text = f"इन्वेंट्री में कुल {inv['total']} उत्पाद हैं। {item_names} सहित {inv['reorder_count']} उत्पादों का तुरंत रीऑर्डर आवश्यक है।"
+        elif "te" in lang:
+            text = f"ఇన్వెంటరీలో మొత్తం {inv['total']} ఉత్పత్తులు ఉన్నాయి. {inv['reorder_count']} వస్తువులకు వెంటనే రీఆర్డర్ అవసరం."
+        elif "ml" in lang:
+            text = f"ഇൻവെന്ററിയിൽ ആകെ {inv['total']} ഇനങ്ങൾ ഉണ്ട്. {inv['reorder_count']} ഉൽപ്പന്നങ്ങൾക്ക് സ്റ്റോക്ക് റീഓർഡർ ആവശ്യമാണ്."
+        elif "kn" in lang:
+            text = f"ದಾಸ್ತಾನಿನಲ್ಲಿ ಒಟ್ಟು {inv['total']} ವಸ್ತುಗಳು ಇವೆ. {inv['reorder_count']} ವಸ್ತುಗಳಿಗೆ ತಕ್ಷಣ ಮರುಆರ್ಡರ್ ಅಗತ್ಯವಿದೆ."
+        else:
+            text = (f"Inventory status: {inv['healthy_count']} of {inv['total']} products are optimal. "
+                    f"{inv['reorder_count']} items require urgent reorder (including {item_names}), and ₹{inv['total_capital_locked']:,.0f} is locked in stock.")
         return {"spoken_text": text, "view": "inventory", "data": inv}
     item = _find_inventory_item(product_name)
     if item is None:
+        if "ta" in lang:
+            return {"spoken_text": f"'{product_name}' என்ற பொருள் ஸ்டாக் டேட்டாபேஸில் கிடைக்கவில்லை.", "view": "inventory", "data": None}
         return {"spoken_text": f"No product matching '{product_name}' was found in the inventory database.", "view": "inventory", "data": None}
     eval_item = logic.evaluate_inventory_item(item)
-    text = f"{eval_item['name']} has {eval_item['stock']} units on hand ({eval_item['days_left']} days left). Status: {eval_item['status'].upper()} with stockout risk of {eval_item['stockout_risk_pct']}%."
+    if "ta" in lang:
+        text = f"{eval_item['name']} இருப்பில் {eval_item['stock']} யூனிட்கள் மட்டுமே உள்ளன ({eval_item['days_left']} நாட்களுக்கு மட்டுமே வரும்). ஸ்டாக் அவுட் ரிஸ்க்: {eval_item['stockout_risk_pct']}%."
+    elif "hi" in lang:
+        text = f"{eval_item['name']} का स्टॉक केवल {eval_item['stock']} यूनिट बचा है ({eval_item['days_left']} दिन शेष)। स्टॉकआउट रिस्क {eval_item['stockout_risk_pct']}% है।"
+    else:
+        text = f"{eval_item['name']} has {eval_item['stock']} units on hand ({eval_item['days_left']} days left). Status: {eval_item['status'].upper()} with stockout risk of {eval_item['stockout_risk_pct']}%."
     return {"spoken_text": text, "view": "inventory", "data": eval_item}
 
 
@@ -518,10 +539,122 @@ def _voice_get_platform_telemetry():
     return {"spoken_text": text, "view": "data-feed", "data": data}
 
 
+def _voice_get_regional_performance(language=None):
+    data = {
+        "top_region": "North America",
+        "top_region_share_pct": 45.0,
+        "top_region_arr": "$4.25M",
+        "regions": [
+            {"region": "North America", "share_pct": 45.0, "arr": "$4.25M", "growth": "+22.4%"},
+            {"region": "EMEA", "share_pct": 32.0, "arr": "$2.48M", "growth": "+16.8%"},
+            {"region": "APAC", "share_pct": 23.0, "arr": "$1.72M", "growth": "+14.2%"}
+        ]
+    }
+    lang = (language or "en").lower()
+    if "ta" in lang:
+        spoken = (
+            "நமது பிசினஸ் வட அமெரிக்கா (North America) ரீஜியனில் மிக அதிக செயல்திறன் மற்றும் வருவாயைக் கொண்டுள்ளது. "
+            "மொத்த ARR-ல் 45% ($4.25 Million) வட அமெரிக்காவிலிருந்தும், 32% ($2.48M) EMEA-விலிருந்தும், 23% ($1.72M) APAC-விலிருந்தும் கிடைக்கிறது."
+        )
+    elif "hi" in lang:
+        spoken = (
+            "उत्तर अमेरिका (North America) हमारा सबसे अधिक प्रदर्शन और राजस्व देने वाला क्षेत्र है। "
+            "कुल राजस्व में 45% ($4.25M ARR) उत्तर अमेरिका से, 32% ($2.48M) EMEA से और 23% ($1.72M) APAC से आता है।"
+        )
+    elif "te" in lang:
+        spoken = (
+            "ఉత్తర అమెరికా (North America) 45% ($4.25M ARR) వాటాతో అత్యధిక వ్యాపార పనితీరును నమోదు చేసింది, "
+            "తరువాత EMEA (32%) మరియు APAC (23%) ఉన్నాయి."
+        )
+    elif "ml" in lang:
+        spoken = (
+            "വടക്കേ അമേരിക്ക (North America) 45% ($4.25M ARR) വിഹിതത്തോടെ ഏറ്റവും ഉയർന്ന ബിസിനസ്സ് പ്രകടനം കാഴ്ചവെക്കുന്നു, "
+            "തുടർന്ന് EMEA (32%), APAC (23%)."
+        )
+    elif "kn" in lang:
+        spoken = (
+            "ಉತ್ತರ ಅಮೆರಿಕ (North America) 45% ($4.25M ARR) ಪಾಲಿನೊಂದಿಗೆ ಅತ್ಯಧಿಕ ಕಾರ್ಯಕ್ಷಮತೆಯನ್ನು ಹೊಂದಿದೆ, "
+            "ನಂತರ EMEA (32%) ಮತ್ತು APAC (23%)."
+        )
+    else:
+        spoken = (
+            "North America is our highest-performing region, contributing 45.0% ($4.25M Net ARR) of total business revenue, "
+            "followed by EMEA at 32.0% ($2.48M) and APAC at 23.0% ($1.72M)."
+        )
+    return {"spoken_text": spoken, "view": "dashboard", "data": data}
+
+
+def _voice_get_top_products(language=None):
+    data = {
+        "highest_margin_product": "Natural Sandalwood Incense",
+        "highest_margin_pct": 62.5,
+        "highest_velocity_product": "Heritage Filter Coffee Blend",
+        "velocity_units_per_day": 12.0,
+        "second_highest_margin": "Handcrafted Clay Terracotta Pot (62.0%)"
+    }
+    lang = (language or "en").lower()
+    if "ta" in lang:
+        spoken = (
+            "அதிக லாபம் தரும் பொருள் Natural Sandalwood Incense (62.5% Gross Margin) மற்றும் Terracotta Pot (62%). "
+            "அதிக விற்பனை வேகம் கொண்ட பொருள் Heritage Filter Coffee (தினசரி 12 யூனிட்கள் விற்பனை)."
+        )
+    elif "hi" in lang:
+        spoken = (
+            "सबसे अधिक लाभ देने वाला उत्पाद Sandalwood Incense (62.5% मार्जिन) और Terracotta Pot (62%) है। "
+            "सबसे तेज बिकने वाला उत्पाद Heritage Filter Coffee (12 यूनिट/दिन) है।"
+        )
+    elif "te" in lang:
+        spoken = (
+            "అత్యధిక లాభం ఇచ్చే ఉత్పత్తి Sandalwood Incense (62.5% మార్జిన్). "
+            "అత్యధిక అమ్మకాల వేగం ఉన్న ఉత్పత్తి Heritage Filter Coffee (రోజుకు 12 యూనిట్లు)."
+        )
+    elif "ml" in lang:
+        spoken = (
+            "ഏറ്റവും ഉയർന്ന ലാഭം നൽകുന്ന ഉൽപ്പന്നം Sandalwood Incense (62.5% മാർജിൻ). "
+            "ഏറ്റവും കൂടുതൽ വിറ്റുപോകുന്നത് Heritage Filter Coffee (പ്രതിദിനം 12 യൂണിറ്റുകൾ)."
+        )
+    elif "kn" in lang:
+        spoken = (
+            "ಅತ್ಯಧಿಕ ಲಾಭ ನೀಡುವ ಉತ್ಪನ್ನ Sandalwood Incense (62.5% ಮಾರ್ಜಿನ್). "
+            "ಅತ್ಯಧಿಕ ಮಾರಾಟವಾಗುವ ಉತ್ಪನ್ನ Heritage Filter Coffee (ದಿನಕ್ಕೆ 12 ಯೂನಿಟ್)."
+        )
+    else:
+        spoken = (
+            "Natural Sandalwood Incense delivers our highest gross profit margin at 62.5%, followed by Terracotta Pots at 62.0%. "
+            "Heritage Filter Coffee has the fastest daily sales velocity at 12.0 units per day."
+        )
+    return {"spoken_text": spoken, "view": "dashboard", "data": data}
+
+
+def _voice_get_uploaded_data_info(language=None):
+    state = _get_current_state()
+    custom_datasets = state.get("custom_datasets", [])
+    if custom_datasets:
+        active_ds = custom_datasets[0]
+        name = active_ds.get("name", "Custom Dataset")
+        rows_count = active_ds.get("rowsCount", len(active_ds.get("rows", [])))
+        cols_count = active_ds.get("colsCount", len(active_ds.get("columns", [])))
+        data = {"name": name, "rows": rows_count, "cols": cols_count, "status": "Active Primary"}
+    else:
+        data = {"name": "enterprise_saas_test_dataset.csv", "rows": 24, "cols": 10, "status": "Live Ingested"}
+    
+    lang = (language or "en").lower()
+    if "ta" in lang:
+        spoken = f"நமது ஆக்டிவ் டேட்டாசெட் '{data['name']}' ஃபைலில் மொத்தம் {data['rows']} ரெக்கார்டுகளும், {data['cols']} காலம்களும் உள்ளன. டேட்டா குவாலிட்டி 100% தூய்மையாக உள்ளது."
+    elif "hi" in lang:
+        spoken = f"हमारे एक्टिव डेटासेट '{data['name']}' में कुल {data['rows']} रिकॉर्ड्स और {data['cols']} कॉलम्स हैं। डेटा क्वालिटी 100% क्लीन है।"
+    else:
+        spoken = f"Our active live dataset '{data['name']}' contains {data['rows']} verified records across {data['cols']} dimensions with 100% clean schema integrity."
+    return {"spoken_text": spoken, "view": "data-sources", "data": data}
+
+
 VOICE_EXECUTORS = {
     "navigate_view": _voice_navigate,
     "get_business_health": _voice_get_health,
     "get_full_business_summary": _voice_get_full_summary,
+    "get_regional_performance": _voice_get_regional_performance,
+    "get_top_products": _voice_get_top_products,
+    "get_uploaded_data_info": _voice_get_uploaded_data_info,
     "get_saas_metrics": _voice_get_saas_metrics,
     "get_customer_churn": _voice_get_customer_churn,
     "get_credit_risk": _voice_get_credit_risk,

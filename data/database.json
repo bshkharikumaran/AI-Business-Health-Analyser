@@ -43,7 +43,317 @@
         }
       ],
       "rowsCount": 3,
-      "uploadedAt": "2026-08-18 12:18:34"
+      "uploadedAt": "2026-08-18 12:40:35"
+    },
+    {
+      "colsCount": 10,
+      "columns": [
+        "Month",
+        "ARR_kUSD",
+        "MRR_kUSD",
+        "Active_Subscribers",
+        "New_Customers",
+        "Churn_Rate_Pct",
+        "CAC_USD",
+        "LTV_USD",
+        "Net_Retention_Pct",
+        "Region"
+      ],
+      "dataQualityScore": 100,
+      "id": "custom_1787035857128",
+      "name": "enterprise_saas_test_dataset.csv",
+      "rows": [
+        {
+          "ARR_kUSD": 3200,
+          "Active_Subscribers": 1420,
+          "CAC_USD": 450,
+          "Churn_Rate_Pct": 2.1,
+          "LTV_USD": 5800,
+          "MRR_kUSD": 266.6,
+          "Month": "Jan 2025",
+          "Net_Retention_Pct": 112,
+          "New_Customers": 120,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 3340,
+          "Active_Subscribers": 1485,
+          "CAC_USD": 440,
+          "Churn_Rate_Pct": 1.9,
+          "LTV_USD": 5920,
+          "MRR_kUSD": 278.3,
+          "Month": "Feb 2025",
+          "Net_Retention_Pct": 114,
+          "New_Customers": 135,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 3520,
+          "Active_Subscribers": 1560,
+          "CAC_USD": 465,
+          "Churn_Rate_Pct": 2.3,
+          "LTV_USD": 6050,
+          "MRR_kUSD": 293.3,
+          "Month": "Mar 2025",
+          "Net_Retention_Pct": 115,
+          "New_Customers": 150,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 3690,
+          "Active_Subscribers": 1640,
+          "CAC_USD": 435,
+          "Churn_Rate_Pct": "2.0",
+          "LTV_USD": 6180,
+          "MRR_kUSD": 307.5,
+          "Month": "Apr 2025",
+          "Net_Retention_Pct": 116,
+          "New_Customers": 145,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 3880,
+          "Active_Subscribers": 1725,
+          "CAC_USD": 420,
+          "Churn_Rate_Pct": 1.8,
+          "LTV_USD": 6300,
+          "MRR_kUSD": 323.3,
+          "Month": "May 2025",
+          "Net_Retention_Pct": 118,
+          "New_Customers": 160,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 4050,
+          "Active_Subscribers": 1810,
+          "CAC_USD": 445,
+          "Churn_Rate_Pct": 2.2,
+          "LTV_USD": 6420,
+          "MRR_kUSD": 337.5,
+          "Month": "Jun 2025",
+          "Net_Retention_Pct": 119,
+          "New_Customers": 170,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 4210,
+          "Active_Subscribers": 1880,
+          "CAC_USD": 480,
+          "Churn_Rate_Pct": 2.5,
+          "LTV_USD": 6500,
+          "MRR_kUSD": 350.8,
+          "Month": "Jul 2025",
+          "Net_Retention_Pct": 117,
+          "New_Customers": 155,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 4390,
+          "Active_Subscribers": 1960,
+          "CAC_USD": 410,
+          "Churn_Rate_Pct": 1.7,
+          "LTV_USD": 6650,
+          "MRR_kUSD": 365.8,
+          "Month": "Aug 2025",
+          "Net_Retention_Pct": 121,
+          "New_Customers": 165,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 4580,
+          "Active_Subscribers": 2045,
+          "CAC_USD": 395,
+          "Churn_Rate_Pct": 1.6,
+          "LTV_USD": 6800,
+          "MRR_kUSD": 381.7,
+          "Month": "Sep 2025",
+          "Net_Retention_Pct": 123,
+          "New_Customers": 180,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 4760,
+          "Active_Subscribers": 2130,
+          "CAC_USD": 415,
+          "Churn_Rate_Pct": 1.9,
+          "LTV_USD": 6910,
+          "MRR_kUSD": 396.6,
+          "Month": "Oct 2025",
+          "Net_Retention_Pct": 122,
+          "New_Customers": 175,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 4980,
+          "Active_Subscribers": 2240,
+          "CAC_USD": 380,
+          "Churn_Rate_Pct": 1.5,
+          "LTV_USD": 7100,
+          "MRR_kUSD": "415.0",
+          "Month": "Nov 2025",
+          "Net_Retention_Pct": 125,
+          "New_Customers": 195,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 5240,
+          "Active_Subscribers": 2360,
+          "CAC_USD": 370,
+          "Churn_Rate_Pct": 1.4,
+          "LTV_USD": 7350,
+          "MRR_kUSD": 436.6,
+          "Month": "Dec 2025",
+          "Net_Retention_Pct": 128,
+          "New_Customers": 210,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 5450,
+          "Active_Subscribers": 2450,
+          "CAC_USD": 405,
+          "Churn_Rate_Pct": 1.8,
+          "LTV_USD": 7480,
+          "MRR_kUSD": 454.1,
+          "Month": "Jan 2026",
+          "Net_Retention_Pct": 126,
+          "New_Customers": 185,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 5680,
+          "Active_Subscribers": 2555,
+          "CAC_USD": 390,
+          "Churn_Rate_Pct": 1.6,
+          "LTV_USD": 7620,
+          "MRR_kUSD": 473.3,
+          "Month": "Feb 2026",
+          "Net_Retention_Pct": 127,
+          "New_Customers": 205,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 5920,
+          "Active_Subscribers": 2670,
+          "CAC_USD": 385,
+          "Churn_Rate_Pct": 1.5,
+          "LTV_USD": 7800,
+          "MRR_kUSD": 493.3,
+          "Month": "Mar 2026",
+          "Net_Retention_Pct": 129,
+          "New_Customers": 220,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 6180,
+          "Active_Subscribers": 2790,
+          "CAC_USD": 365,
+          "Churn_Rate_Pct": 1.3,
+          "LTV_USD": 7950,
+          "MRR_kUSD": "515.0",
+          "Month": "Apr 2026",
+          "Net_Retention_Pct": 131,
+          "New_Customers": 230,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 6420,
+          "Active_Subscribers": 2900,
+          "CAC_USD": 375,
+          "Churn_Rate_Pct": 1.4,
+          "LTV_USD": 8120,
+          "MRR_kUSD": "535.0",
+          "Month": "May 2026",
+          "Net_Retention_Pct": 130,
+          "New_Customers": 225,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 6700,
+          "Active_Subscribers": 3030,
+          "CAC_USD": 350,
+          "Churn_Rate_Pct": 1.2,
+          "LTV_USD": 8300,
+          "MRR_kUSD": 558.3,
+          "Month": "Jun 2026",
+          "Net_Retention_Pct": 133,
+          "New_Customers": 245,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 6950,
+          "Active_Subscribers": 3150,
+          "CAC_USD": 380,
+          "Churn_Rate_Pct": 1.5,
+          "LTV_USD": 8450,
+          "MRR_kUSD": 579.1,
+          "Month": "Jul 2026",
+          "Net_Retention_Pct": 132,
+          "New_Customers": 235,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 7210,
+          "Active_Subscribers": 3280,
+          "CAC_USD": 360,
+          "Churn_Rate_Pct": 1.3,
+          "LTV_USD": 8620,
+          "MRR_kUSD": 600.8,
+          "Month": "Aug 2026",
+          "Net_Retention_Pct": 134,
+          "New_Customers": 250,
+          "Region": "North America"
+        },
+        {
+          "ARR_kUSD": 7500,
+          "Active_Subscribers": 3410,
+          "CAC_USD": 340,
+          "Churn_Rate_Pct": 1.1,
+          "LTV_USD": 8800,
+          "MRR_kUSD": "625.0",
+          "Month": "Sep 2026",
+          "Net_Retention_Pct": 136,
+          "New_Customers": 265,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 7780,
+          "Active_Subscribers": 3540,
+          "CAC_USD": 355,
+          "Churn_Rate_Pct": 1.2,
+          "LTV_USD": 8980,
+          "MRR_kUSD": 648.3,
+          "Month": "Oct 2026",
+          "Net_Retention_Pct": 135,
+          "New_Customers": 260,
+          "Region": "EMEA"
+        },
+        {
+          "ARR_kUSD": 8090,
+          "Active_Subscribers": 3690,
+          "CAC_USD": 330,
+          "Churn_Rate_Pct": "1.0",
+          "LTV_USD": 9200,
+          "MRR_kUSD": 674.1,
+          "Month": "Nov 2026",
+          "Net_Retention_Pct": 138,
+          "New_Customers": 280,
+          "Region": "APAC"
+        },
+        {
+          "ARR_kUSD": 8450,
+          "Active_Subscribers": 3850,
+          "CAC_USD": 315,
+          "Churn_Rate_Pct": 0.9,
+          "LTV_USD": 9450,
+          "MRR_kUSD": 704.1,
+          "Month": "Dec 2026",
+          "Net_Retention_Pct": 140,
+          "New_Customers": 300,
+          "Region": "APAC"
+        }
+      ],
+      "rowsCount": 24,
+      "uploadedAt": "2026-08-18 12:20:58"
     }
   ],
   "inventory": [
@@ -118,7 +428,7 @@
       "unit_cost": 620
     }
   ],
-  "last_sync": "2026-08-18T12:19:10.406214",
+  "last_sync": "2026-08-18T12:40:44.474910",
   "reviews": [
     {
       "date": "2026-08-10",
@@ -313,6 +623,48 @@
     }
   },
   "whatsapp_log": [
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "sales_drop",
+      "id": "alert-a7aa2d10",
+      "item_key": "sales_forecast",
+      "message": "📉 *Sales Forecast Warning*\n\n• Projected Decline: *-10.3%* next month\n• Estimated Monthly Revenue: *₹183.9k*\n\n💡 *Action:* Launch a targeted WhatsApp promotional broadcast with 15% discount to your top 100 regular buyers.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 12:19 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:19:18",
+      "title": "📉 Sales Velocity Drop Warning",
+      "to": "Chinnu (+91 98765 43210)",
+      "trigger_rule_id": "rule-3",
+      "urgency": "medium"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "stockout_risk",
+      "id": "alert-b667f863",
+      "item_key": "GRO-CO-005",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Cooking Oil 5L Can* (`GRO-CO-005`)\n• Stock Remaining: *8 units* (2.9 days left)\n• Stockout Probability: *71.4%*\n• Recommended Reorder: *11.2 units* (EOQ: 91 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 12:19 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:19:18",
+      "title": "🚨 Critical Stockout Alert: Cooking Oil 5L Can",
+      "to": "Chinnu (+91 98765 43210)",
+      "trigger_rule_id": "rule-1",
+      "urgency": "critical"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "stockout_risk",
+      "id": "alert-30270987",
+      "item_key": "GRO-RC-025",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Rice — 25kg bag* (`GRO-RC-025`)\n• Stock Remaining: *14 units* (4.1 days left)\n• Stockout Probability: *76.5%*\n• Recommended Reorder: *23.8 units* (EOQ: 75 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 12:19 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:19:18",
+      "title": "🚨 Critical Stockout Alert: Rice — 25kg bag",
+      "to": "Chinnu (+91 98765 43210)",
+      "trigger_rule_id": "rule-1",
+      "urgency": "critical"
+    },
     {
       "channel": "WhatsApp (Automated Bot)",
       "event_type": "test_connection",

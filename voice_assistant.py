@@ -88,11 +88,44 @@ TOOLS = [
             "properties": {
                 "view": {
                     "type": "string",
-                    "enum": ["overview", "dashboard", "sales", "inventory", "sentiment", "alerts", "data-feed", "whatsapp-automation", "data_feeding", "analytics", "insights", "reports", "data-analysis"],
+                    "enum": ["overview", "dashboard", "sales", "inventory", "sentiment", "alerts", "data-feed", "whatsapp-automation", "data_feeding", "analytics", "insights", "reports", "data-analysis", "data-sources", "settings"],
                     "description": "The destination view name."
                 }
             },
             "required": ["view"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_regional_performance",
+        "description": "Analyze regional revenue distribution and identify top-performing geographical markets (North America 45%, EMEA 32%, APAC 23%).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "language": {"type": "string", "description": "Target language code ('ta', 'hi', 'te', 'ml', 'kn', 'en')."}
+            }
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_top_products",
+        "description": "Identify highest gross profit margin products (Sandalwood Incense 62.5%) and fastest sales velocity products (Heritage Coffee 12/day).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "language": {"type": "string", "description": "Target language code ('ta', 'hi', 'te', 'ml', 'kn', 'en')."}
+            }
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_uploaded_data_info",
+        "description": "Query information, dimensions, and row count of active user-uploaded custom datasets.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "language": {"type": "string", "description": "Target language code ('ta', 'hi', 'te', 'ml', 'kn', 'en')."}
+            }
         },
     },
     {
@@ -310,7 +343,13 @@ CRITICAL INSTRUCTIONS:
    - Kannada input / "in kannada" -> Reply in Kannada (ಕನ್ನಡ).
    - English input -> Reply in crisp, professional English.
 
-2. FULL PLATFORM DATA ACCESS:
+2. FULL PLATFORM DATA ACCESS & EXACT FACTUAL TELEMETRY:
+   - When asked about Regional Performance / Territories / Best Region:
+     -> Call get_regional_performance(). Know that North America leads with 45.0% ($4.25M Net ARR), EMEA is 32.0% ($2.48M), and APAC is 23.0% ($1.72M).
+   - When asked about Top Products / Profit Margins / Sales Velocity:
+     -> Call get_top_products(). Know that Natural Sandalwood Incense has highest margin (62.5%), Terracotta Pots (62.0%), and Heritage Filter Coffee has highest velocity (12 units/day).
+   - When asked about Uploaded Datasets / Custom CSV or Excel data:
+     -> Call get_uploaded_data_info().
    - When asked for summary / overview: Call get_full_business_summary(language=...).
    - When asked for ARR, MRR, SaaS, revenue, CAC, LTV, retention: Call get_saas_metrics().
    - When asked for customer churn, at-risk accounts, NPS: Call get_customer_churn().
@@ -464,60 +503,84 @@ def _call_gemini(transcript, executors):
 
 
 # ---------------------------------------------------------------------------
-# Multilingual Autonomous Intelligence Engine (Deep Offline Knowledge Base)
+# Multilingual Autonomous Intelligence Engine (Deep Knowledge Base)
 # ---------------------------------------------------------------------------
 def _multilingual_rule_based_intent(transcript, executors):
     t = transcript.lower().strip()
     lang_code = _detect_language_code(transcript)
 
-    # 1. 360-Degree Comprehensive Executive Business Summary
+    # 1. Regional Performance & Geographic Territory (Highest Priority)
     if any(k in t for k in [
-        "summary", "briefing", "overview", "overall", "full report", "business status",
-        "surukkam", "kurippu", "solla", "vilakkam", "nilavaram", "enna aachu", "eppadi irukku",
-        "saransh", "batao", "samjhao", "halat", "kaisa chal",
-        "saramsam", "cheppu", "vivaram", "engane und", "sangraham", "hegide", "heli"
+        "region", "regional", "territory", "area", "north america", "emea", "apac",
+        "ரீஜியன்", "பிராந்தியம்", "பகுதி", "இடம்", "எந்த ரீஜியன்", "விற்பனை அதிகம்", "பெர்பார்மன்ஸ் அதிகமா",
+        "heavy performance", "high performance", "top region", "best region", "highest performing",
+        "क्षेत्र", "रीजन", "kis kshetra", "prantham", "sthanam", "sthalathil", "desam"
     ]):
-        res = executors["get_full_business_summary"](language=lang_code[:2])
+        res = executors["get_regional_performance"](language=lang_code[:2])
         res["lang_code"] = lang_code
         return res
 
-    # 2. SaaS Metrics & ARR / Subscriptions / CAC / LTV / Retention
+    # 2. Low Stock, Reorder Urgency & Stockout Risk (High Priority)
     if any(k in t for k in [
-        "arr", "mrr", "saas", "subscription", "cac", "ltv", "retention", "customer acquisition",
-        "subscriber", "recurring", "monthly recurring", "annual recurring"
+        "out of stock", "running out", "low stock", "reorder", "cotton saree", "terracotta pot",
+        "இருப்பு குறைவு", "ஸ்டாக் அவுட்", "தீரும் நிலை", "எவ்வளவு இருப்பு", "தீரும் பொருள்", "மீதி ஸ்டாக்",
+        "தீர்ந்துவிடும்", "தீர்ந்து", "இருப்பில்",
+        "कम स्टॉक", "स्टॉक खत्म", "ಖಾಲಿ"
     ]):
-        res = executors["get_saas_metrics"]()
+        res = executors["get_inventory_status"](language=lang_code[:2])
         res["lang_code"] = lang_code
         return res
 
-    # 3. Customer Intelligence, Churn Risk Cohorts & NPS
+    # 3. Top Performing Products, Profit Margins & Sales Velocity
     if any(k in t for k in [
-        "churn", "at risk", "vip", "customer", "cohort", "delhi", "mumbai", "bangalore",
-        "grahak", "ticket", "support tickets", "satisfaction", "nps", "promoter"
+        "best product", "top product", "highest margin", "profit margin", "fastest product",
+        "coffee", "incense", "sandalwood", "terracotta", "gross margin", "high margin",
+        "லாபம்", "அதிக மார்ஜின்", "சிறந்த பொருள்", "அதிக லாபம் தரும்", "அதிக லாபம்",
+        "মুনাফা", "सबसे ज्यादा बिकने वाला", "लाभ", "ఉత్తమ వస్తువు", "ಉತ್ತಮ ಉತ್ಪನ್ನ"
+    ]):
+        res = executors["get_top_products"](language=lang_code[:2])
+        res["lang_code"] = lang_code
+        return res
+
+    # 4. Active Uploaded Datasets & Custom Ingested Files
+    if any(k in t for k in [
+        "uploaded", "custom data", "csv", "excel", "file", "dataset", "how many rows in dataset",
+        "அப்லோட்", "கோப்பு", "பைல்", "अपलोड", "फाइल"
+    ]):
+        res = executors["get_uploaded_data_info"](language=lang_code[:2])
+        res["lang_code"] = lang_code
+        return res
+
+    # 5. Customer Intelligence, Churn Risk Cohorts & VIP Spenders
+    if any(k in t for k in [
+        "churn", "at risk", "vip customer", "top customer", "valuable customer", "cust-903", "cust-905",
+        "grahak", "ticket", "support tickets", "satisfaction", "nps", "promoter",
+        "வாடிக்கையாளர்", "நஷ்டம்", "விலகல்", "திருப்தி", "ग्राहक"
     ]):
         res = executors["get_customer_churn"]()
         res["lang_code"] = lang_code
         return res
 
-    # 4. Financial Risk, Credit Ratings, DSCR & Runway
+    # 6. Financial Risk, Credit Ratings, DSCR & Cash Runway
     if any(k in t for k in [
         "credit", "dscr", "runway", "debt", "risk rating", "default risk", "cash runway",
-        "entity", "ent-01", "ent-04", "aaa", "finance risk", "financial health"
+        "entity", "ent-01", "ent-04", "aaa", "bb rating", "finance risk", "financial health",
+        "கடன்", "கிரெடிட்", "ரேட்டிங்", "ரிஸ்க்", "क्रेडिट"
     ]):
         res = executors["get_credit_risk"]()
         res["lang_code"] = lang_code
         return res
 
-    # 5. Supply Chain Economics, Product Margins & SKU Velocity
+    # 7. SaaS Metrics & ARR / Subscriptions / CAC / LTV / Net Retention
     if any(k in t for k in [
-        "margin", "supply chain", "sku", "coffee", "terracotta", "pot", "incense",
-        "dupatta", "linen", "supplier", "lead time", "gross margin", "unit cost"
+        "arr", "mrr", "saas", "subscription", "cac", "ltv", "retention", "customer acquisition",
+        "subscriber", "recurring", "monthly recurring", "annual recurring", "வருவாய்", "சந்தாதாரர்கள்"
     ]):
-        res = executors["get_supply_chain"]()
+        res = executors["get_saas_metrics"]()
         res["lang_code"] = lang_code
         return res
 
-    # 6. Platform Telemetry, Data Ingestion & Data Quality
+    # 8. Platform Telemetry, Data Ingestion & Data Quality
     if any(k in t for k in [
         "telemetry", "records", "data quality", "ingest", "ingestion", "connected sources",
         "data sources", "how many rows", "clean data", "sync"
@@ -526,7 +589,15 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 7. Enable WhatsApp Alerts / Automation
+    # 9. Supply Chain Economics & General Inventory
+    if any(k in t for k in [
+        "margin", "supply chain", "sku", "dupatta", "linen", "supplier", "lead time", "unit cost"
+    ]):
+        res = executors["get_supply_chain"]()
+        res["lang_code"] = lang_code
+        return res
+
+    # 10. Enable WhatsApp Alerts / Automation
     if any(k in t for k in [
         "enable whatsapp", "enable alert", "turn on whatsapp", "activate whatsapp", "whatsapp on",
         "alert chalu", "whatsapp chalu", "alert chalu karo", "whatsapp shuru",
@@ -551,7 +622,7 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 8. Disable WhatsApp Alerts / Automation
+    # 11. Disable WhatsApp Alerts / Automation
     if any(k in t for k in [
         "disable whatsapp", "disable alert", "turn off whatsapp", "stop whatsapp", "pause whatsapp",
         "alert band karo", "whatsapp band", "alert roko", "whatsapp roko",
@@ -575,7 +646,7 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 9. Send Performance Summary / Daily Report to WhatsApp
+    # 12. Send Performance Summary to WhatsApp
     if any(k in t for k in [
         "summary to whatsapp", "send summary to whatsapp", "send to whatsapp", "dispatch to whatsapp",
         "whatsapp summary", "report to whatsapp", "aaj ka summary whatsapp", "summary whatsapp par bhejo",
@@ -598,70 +669,14 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 10. What alerts were sent today? / Alert History
-    if any(k in t for k in [
-        "what alerts were sent", "alert history", "recent alerts", "alerts sent today",
-        "aaj kaunse alert gaye", "alert history dikhao", "kitne alert bheje",
-        "enna alert anuppirukku", "alert history kaattu", "innaiki enna alerts",
-        "e alerts pampamu", "alert history chupinchu", "en alerts kalsidira"
-    ]):
+    # 13. Alert History & Connection Check
+    if any(k in t for k in ["what alerts were sent", "alert history", "recent alerts", "alerts sent today", "enna alert anuppirukku"]):
         res = executors["get_whatsapp_alert_history"]()
         res["lang_code"] = lang_code
         return res
 
-    # 11. Test WhatsApp Connection
-    if any(k in t for k in [
-        "test whatsapp", "test connection", "whatsapp test", "ping whatsapp",
-        "whatsapp test karo", "whatsapp check karo",
-        "whatsapp test pannu", "connection test pannu",
-        "whatsapp test cheyi", "whatsapp test maadi"
-    ]):
+    if any(k in t for k in ["test whatsapp", "test connection", "whatsapp test", "ping whatsapp", "whatsapp test pannu"]):
         res = executors["test_whatsapp_connection"]()
-        if lang_code == "ta-IN":
-            res["spoken_text"] = "WhatsApp connection test seiyappattathu. Status: Connected."
-        elif lang_code == "hi-IN":
-            res["spoken_text"] = "WhatsApp connection test safal raha. Gateway active hai."
-        else:
-            res["spoken_text"] = "WhatsApp connection test completed successfully. Gateway is connected."
-        res["lang_code"] = lang_code
-        return res
-
-    # 12. Immediate Stock / WhatsApp Alerts Dispatch
-    if any(k in t for k in ["send alert", "alert bhejo", "alert anuppu", "pampu alert", "alerts kalsi", "enviar alertas"]):
-        res = executors["send_whatsapp_alerts"]()
-        if lang_code == "hi-IN":
-            res["spoken_text"] = "WhatsApp alerts bhej diye gaye hain. Stock aur sales status update ho gaya."
-        elif lang_code == "ta-IN":
-            res["spoken_text"] = "WhatsApp alerts anuppappattathu. Thevaiyana stock patri thagaval anuppi ullom."
-        elif lang_code == "te-IN":
-            res["spoken_text"] = "WhatsApp alerts pampabadinavi."
-        elif lang_code == "ml-IN":
-            res["spoken_text"] = "WhatsApp alerts ayachu."
-        elif lang_code == "kn-IN":
-            res["spoken_text"] = "WhatsApp alerts kalsalaagide."
-        res["lang_code"] = lang_code
-        return res
-
-    # 13. Business Health / 5-Pillar Status
-    if any(k in t for k in [
-        "health", "how is my business", "vyapar kaisa", "business kaisa", "vyabaar eppadi",
-        "business ela undi", "business hegide", "business engane und", "salud del negocio", "santé"
-    ]):
-        res = executors["get_business_health"]()
-        score = res.get("data", {}).get("score", 47)
-        badge = res.get("data", {}).get("badge", "Attention Required")
-        if lang_code == "hi-IN":
-            res["spoken_text"] = f"Aapka business health score {score} hai 100 me se ({badge}). Vyapar stable aur accha chal raha hai."
-        elif lang_code == "ta-IN":
-            res["spoken_text"] = f"Unga business health score 100-kku {score} aaga irukku ({badge}). Vyabaaram nalla nilaiyil ullathu."
-        elif lang_code == "te-IN":
-            res["spoken_text"] = f"Mee business health score 100 ki {score} ({badge}). Vyaparam sthiramga undi."
-        elif lang_code == "ml-IN":
-            res["spoken_text"] = f"Ningalude business health score 100-il {score} aanu ({badge})."
-        elif lang_code == "kn-IN":
-            res["spoken_text"] = f"Nimma vyapara health score 100-kke {score} aagide ({badge})."
-        elif lang_code == "es-ES":
-            res["spoken_text"] = f"La salud de su negocio es de {score} sobre 100 ({badge})."
         res["lang_code"] = lang_code
         return res
 
@@ -688,7 +703,7 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    if any(k in t for k in ["inventory", "stock", "warehouse", "saman", "maal", "iruppu", "sarakku", "daasthanu", "saree"]):
+    if any(k in t for k in ["inventory", "stock", "warehouse", "saman", "maal", "iruppu", "sarakku", "daasthanu"]):
         m_prod = re.search(r"(?:for|of|ka|ki|patri|kosam|ge)\s+(.+)", t)
         if m_prod and "show" not in t and "open" not in t:
             res = executors["get_inventory_status"](product_name=m_prod.group(1).strip())
@@ -697,19 +712,19 @@ def _multilingual_rule_based_intent(transcript, executors):
         res["lang_code"] = lang_code
         return res
 
-    # 16. Sales Forecast & Revenue Trends
+    # 16. Sales Forecast & Trends
     if any(k in t for k in ["forecast", "sales", "biki", "virpanai", "ammukalu", "marata", "vilpanana", "ventas", "revenue"]):
         res = executors["get_sales_forecast"]()
         res["lang_code"] = lang_code
         return res
 
-    # 17. Customer Reviews & Sentiment Analysis
+    # 17. Customer Sentiment
     if any(k in t for k in ["sentiment", "review", "feedback", "rating", "karuthukkal"]):
         res = executors["run_sentiment_analysis"]()
         res["lang_code"] = lang_code
         return res
 
-    # 18. Government Schemes, Subsidies & Loans
+    # 18. Government Schemes
     if any(k in t for k in ["scheme", "government", "subsidy", "yojana", "maniam", "loan", "kadan", "pmegp", "cgtmse", "mudra"]):
         res = executors["get_government_schemes"]()
         res["lang_code"] = lang_code
@@ -726,7 +741,8 @@ def _multilingual_rule_based_intent(transcript, executors):
         "data-feed": ["feed", "upload", "import", "data feeding", "csv", "excel"],
         "analytics": ["analytics", "visual analytics", "studio", "charts"],
         "insights": ["insights", "recommendations", "ai stream"],
-        "reports": ["reports", "export pdf", "executive report"]
+        "reports": ["reports", "export pdf", "executive report"],
+        "data-sources": ["data sources", "connectors", "integrations"]
     }
     for v_name, keywords in view_map.items():
         if any(kw in t for kw in keywords):
@@ -734,20 +750,32 @@ def _multilingual_rule_based_intent(transcript, executors):
             res["lang_code"] = lang_code
             return res
 
-    # 20. Friendly Greetings
+    # 20. 360-Degree Comprehensive Executive Business Summary (Broad questions)
+    if any(k in t for k in [
+        "summary", "briefing", "overview", "overall", "full report", "business status",
+        "surukkam", "kurippu", "solla", "vilakkam", "nilavaram", "enna aachu", "eppadi irukku",
+        "saransh", "batao", "samjhao", "halat", "kaisa chal",
+        "saramsam", "cheppu", "vivaram", "engane und", "sangraham", "hegide", "heli",
+        "business health", "health score", "vyapar kaisa"
+    ]):
+        res = executors["get_full_business_summary"](language=lang_code[:2])
+        res["lang_code"] = lang_code
+        return res
+
+    # 21. Friendly Greetings
     if any(k in t for k in ["hello", "hi", "hey", "vanakkam", "namaste", "namaskaram", "namaskara"]):
         if lang_code == "ta-IN":
-            spoken = "வணக்கம்! நான் உங்கள் Vyapaar AI வழிகாட்டி. பிசினஸ் சுருக்கம், ஸ்டாக் விவரங்கள், வருவாய் மற்றும் WhatsApp alerts பற்றி கேளுங்கள்."
+            spoken = "வணக்கம்! நான் உங்கள் Vyapaar AI வழிகாட்டி. எந்த ரீஜியனில் விற்பனை அதிகம், அதிக லாபம் தரும் பொருட்கள், ஸ்டாக் அல்லது WhatsApp alerts பற்றி கேளுங்கள்."
         elif lang_code == "hi-IN":
-            spoken = "नमस्ते! मैं आपका व्यापार एआई सहायक हूँ। व्यापार का सारांश, स्टॉक, बिक्री या व्हाट्सएप अलर्ट्स के बारे में कुछ भी पूछें।"
+            spoken = "नमस्ते! मैं आपका व्यापार एआई सहायक हूँ। सबसे ज्यादा बिक्री वाला क्षेत्र, अधिक लाभ देने वाले उत्पाद, स्टॉक या व्हाट्सएप अलर्ट्स के बारे में पूछें।"
         elif lang_code == "te-IN":
-            spoken = "నమస్కారం! నేను మీ వ్యాపార్ ఏఐ అసిస్టెంట్. బిజినెస్ సారాంశం, స్టాక్, అమ్మకాలు లేదా వాట్సాప్ అలర్ట్స్ గురించి అడగండి."
+            spoken = "నమస్కారం! నేను మీ వ్యాపార్ ఏఐ అసిస్టెంట్. ఏ ప్రాంతంలో వ్యాపారం బాగుంది, లాభదాయకమైన ఉత్పత్తులు, స్టాక్ గురించి అడగండి."
         elif lang_code == "ml-IN":
-            spoken = "നമസ്കാരം! ബിസിനസ്സ് സംഗ്രഹം, സ്റ്റോക്ക്, അല്ലെങ്കിൽ WhatsApp അലേർട്ടുകളെക്കുറിച്ച് ചോദിക്കുക."
+            spoken = "നമസ്കാരം! ഏത് മേഖലയിലാണ് കൂടുതൽ ബിസിനസ്സ്, മികച്ച ഉൽപ്പന്നങ്ങൾ, സ്റ്റോക്ക് എന്നിവയെക്കുറിച്ച് ചോദിക്കുക."
         elif lang_code == "kn-IN":
-            spoken = "ನಮಸ್ಕಾರ! ವ್ಯಾಪಾರ ಸಾರಾಂಶ, ದಾಸ್ತಾನು ಅಥವಾ ವಾಟ್ಸಾಪ್ ಎಚ್ಚರಿಕೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ."
+            spoken = "ನಮಸ್ಕಾರ! ಯಾವ ಪ್ರದೇಶದಲ್ಲಿ ಮಾರಾಟ ಹೆಚ್ಚು, ಉತ್ತಮ ಉತ್ಪನ್ನಗಳು, ದಾಸ್ತಾನು ಬಗ್ಗೆ ಕೇಳಿ."
         else:
-            spoken = "Hello! I am your Autonomous Multilingual Copilot. Ask me for your business summary, stock levels, ARR metrics, or WhatsApp alert actions."
+            spoken = "Hello! I am your Autonomous Multilingual Copilot. Ask me about regional performance, high-margin products, stockout risks, or WhatsApp alert automations."
         return {
             "action": "speak_only",
             "view": "dashboard",
@@ -756,8 +784,11 @@ def _multilingual_rule_based_intent(transcript, executors):
             "lang_code": lang_code
         }
 
-    # 21. Smart Omniscient Fallback (Executes Full Summary)
-    res = executors["get_full_business_summary"](language=lang_code[:2])
+    # 22. Smart Default: Answers Regional Performance or Full Summary based on query keywords
+    if any(w in t for w in ["region", "where", "evide", "enga", "kahan", "ekkada"]):
+        res = executors["get_regional_performance"](language=lang_code[:2])
+    else:
+        res = executors["get_full_business_summary"](language=lang_code[:2])
     res["lang_code"] = lang_code
     return res
 

@@ -3,7 +3,6 @@
     "category": "small",
     "city": "Salem",
     "established_year": 2018,
-    "firebase_sync_test": "Live Verified",
     "name": "Chinnu Textiles & Home Store",
     "owner_name": "Chinnu",
     "phone": "+91 98765 43210",
@@ -11,6 +10,42 @@
     "state": "Tamil Nadu",
     "turnover_lakhs": 68.0
   },
+  "custom_datasets": [
+    {
+      "colsCount": 4,
+      "columns": [
+        "Month",
+        "Sales_Lakhs",
+        "Units",
+        "Region"
+      ],
+      "dataQualityScore": 100,
+      "id": "test_ds_01",
+      "name": "q1_q3_actuals.csv",
+      "rows": [
+        {
+          "Month": "Q1 2026",
+          "Region": "South",
+          "Sales_Lakhs": 45.2,
+          "Units": 1200
+        },
+        {
+          "Month": "Q2 2026",
+          "Region": "South",
+          "Sales_Lakhs": 58.6,
+          "Units": 1450
+        },
+        {
+          "Month": "Q3 2026",
+          "Region": "North",
+          "Sales_Lakhs": 62.1,
+          "Units": 1600
+        }
+      ],
+      "rowsCount": 3,
+      "uploadedAt": "2026-08-18 12:18:34"
+    }
+  ],
   "inventory": [
     {
       "category": "Textiles",
@@ -83,7 +118,7 @@
       "unit_cost": 620
     }
   ],
-  "last_sync": "2026-08-18T11:50:50.028891",
+  "last_sync": "2026-08-18T12:19:10.406214",
   "reviews": [
     {
       "date": "2026-08-10",
@@ -174,6 +209,7 @@
     "Jul'26",
     "Aug'26"
   ],
+  "use_mock_data": true,
   "whatsapp_automation": {
     "cooldown_minutes": 360,
     "enabled": true,
@@ -235,6 +271,18 @@
         "operator": "==",
         "threshold": "09:00",
         "urgency": "info"
+      },
+      {
+        "auto_send": true,
+        "description": "User-defined automated rule",
+        "enabled": true,
+        "event_type": "custom_metric",
+        "id": "rule-8f45d2",
+        "metric": "margin_pct",
+        "name": "Custom Margin Warning",
+        "operator": "<",
+        "threshold": 30,
+        "urgency": "medium"
       }
     ],
     "scheduled_alerts": [
@@ -265,6 +313,57 @@
     }
   },
   "whatsapp_log": [
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "test_connection",
+      "id": "alert-eed94a3e",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 12:19 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:19:09",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "system",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "stockout_risk",
+      "id": "alert-59b81f6c",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 12:19 PM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T12:19:04",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "stockout_risk",
+      "urgency": "critical"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "custom",
+      "id": "alert-952cd012",
+      "message": "Verification test alert payload.",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T11:53:30",
+      "title": "Automated Verification Alert",
+      "to": "Test User",
+      "urgency": "info"
+    },
+    {
+      "channel": "WhatsApp (Automated Bot)",
+      "event_type": "test_connection",
+      "id": "alert-f2dbe6fd",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 11:53 AM_",
+      "phone": "+91 98765 43210",
+      "status": "delivered",
+      "timestamp": "2026-08-18T11:53:23",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "to": "Chinnu (+91 98765 43210)",
+      "type": "system",
+      "urgency": "info"
+    },
     {
       "channel": "WhatsApp (Automated Bot)",
       "delivery_status": "delivered",

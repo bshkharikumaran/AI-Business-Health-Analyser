@@ -621,6 +621,58 @@ def handle_sentiment():
 
 
 # ---------------------------------------------------------------------------
+# Workspace Settings & Custom Datasets Endpoints
+# ---------------------------------------------------------------------------
+@app.route("/api/settings/mock-mode", methods=["GET", "POST"])
+def handle_mock_mode():
+    state = _get_current_state()
+    if request.method == "POST":
+        body = request.get_json(force=True) or {}
+        use_mock = bool(body.get("use_mock_data", True))
+        state["use_mock_data"] = use_mock
+        db.save_state(state)
+        return jsonify({"success": True, "use_mock_data": use_mock})
+    return jsonify({"use_mock_data": state.get("use_mock_data", True)})
+
+
+@app.route("/api/datasets/custom", methods=["GET", "POST"])
+def handle_custom_datasets():
+    state = _get_current_state()
+    if "custom_datasets" not in state:
+        state["custom_datasets"] = []
+
+    if request.method == "POST":
+        body = request.get_json(force=True) or {}
+        name = body.get("name", "Untitled Dataset")
+        rows = body.get("rows", [])
+        dataset_id = body.get("id") or f"custom_{int(datetime.now().timestamp())}"
+        new_ds = {
+            "id": dataset_id,
+            "name": name,
+            "rows": rows,
+            "columns": list(rows[0].keys()) if rows else [],
+            "uploadedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "rowsCount": len(rows),
+            "colsCount": len(rows[0].keys()) if rows else 0,
+            "dataQualityScore": 100
+        }
+        state["custom_datasets"] = [d for d in state["custom_datasets"] if d["id"] != dataset_id]
+        state["custom_datasets"].insert(0, new_ds)
+        db.save_state(state)
+        return jsonify({"success": True, "dataset": new_ds})
+
+    return jsonify({"custom_datasets": state.get("custom_datasets", [])})
+
+
+@app.route("/api/datasets/custom/<dataset_id>", methods=["DELETE"])
+def delete_custom_dataset(dataset_id):
+    state = _get_current_state()
+    state["custom_datasets"] = [d for d in state.get("custom_datasets", []) if d["id"] != dataset_id]
+    db.save_state(state)
+    return jsonify({"success": True, "deleted_id": dataset_id})
+
+
+# ---------------------------------------------------------------------------
 # WhatsApp Alert Automation REST Endpoints
 # ---------------------------------------------------------------------------
 @app.route("/api/whatsapp/config", methods=["GET", "POST"])

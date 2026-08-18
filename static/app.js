@@ -11,6 +11,11 @@ const AppState = {
   currentTheme: 'light',
   currentDateRange: '30d',
   
+  // Mock Data Mode (ON = Use Presets/Mock, OFF = Use Uploaded Live Data)
+  useMockData: true,
+  customUploadedDatasets: [],
+  activeCustomDatasetId: null,
+
   // Active Ingestion Dataset
   currentDatasetId: 'saas_metrics',
   currentDatasetName: 'Enterprise SaaS ARR & Subscriptions (2025-2026)',
@@ -121,8 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3. Load default dataset
-  loadPresetDataset('saas_metrics');
+  // 3. Initialize Mock Data Mode & Uploaded Custom Data Sources
+  initMockModeAndSources();
 
   // 4. Initialize Dashboard Visuals
   initDashboardCharts();
@@ -188,6 +193,10 @@ function switchView(viewId) {
     generateExecutiveReport();
   } else if (viewId === 'data-analysis') {
     populateAnalysisSelectors();
+  } else if (viewId === 'data-sources') {
+    renderUploadedSourcesGrid();
+  } else if (viewId === 'settings') {
+    updateMockDataModeUI();
   } else if (viewId === 'whatsapp-automation') {
     fetchWhatsAppConfig();
     fetchWhatsAppRules();
@@ -228,7 +237,380 @@ function setAppTheme(theme) {
 }
 
 // ==========================================================================
-// 3. DATASET MANAGEMENT & PRESETS
+// 3. MOCK DATA MODE & UPLOADED DATA SOURCES ENGINE
+// ==========================================================================
+async function initMockModeAndSources() {
+  const savedMockPref = localStorage.getItem('vyapaar_use_mock_data');
+  AppState.useMockData = savedMockPref !== null ? savedMockPref === 'true' : true;
+
+  try {
+    const savedCustom = localStorage.getItem('vyapaar_custom_datasets');
+    if (savedCustom) {
+      AppState.customUploadedDatasets = JSON.parse(savedCustom);
+    }
+  } catch (e) {
+    AppState.customUploadedDatasets = [];
+  }
+
+  try {
+    const res = await fetch('/api/datasets/custom');
+    const data = await res.json();
+    if (data && data.custom_datasets && Array.isArray(data.custom_datasets) && data.custom_datasets.length > 0) {
+      const existingIds = new Set(AppState.customUploadedDatasets.map(d => d.id));
+      data.custom_datasets.forEach(cd => {
+        if (!existingIds.has(cd.id)) {
+          AppState.customUploadedDatasets.push(cd);
+        }
+      });
+      localStorage.setItem('vyapaar_custom_datasets', JSON.stringify(AppState.customUploadedDatasets));
+    }
+  } catch (e) {}
+
+  const savedActiveId = localStorage.getItem('vyapaar_active_custom_id');
+  if (savedActiveId && AppState.customUploadedDatasets.some(d => d.id === savedActiveId)) {
+    AppState.activeCustomDatasetId = savedActiveId;
+  } else if (AppState.customUploadedDatasets.length > 0) {
+    AppState.activeCustomDatasetId = AppState.customUploadedDatasets[0].id;
+  }
+
+  if (AppState.useMockData) {
+    loadPresetDataset('saas_metrics');
+  } else if (AppState.customUploadedDatasets.length > 0) {
+    const activeCustom = AppState.customUploadedDatasets.find(d => d.id === AppState.activeCustomDatasetId) || AppState.customUploadedDatasets[0];
+    activateCustomDataset(activeCustom.id, false);
+  } else {
+    loadPresetDataset('saas_metrics');
+  }
+
+  updateMockDataModeUI();
+  renderUploadedSourcesGrid();
+}
+
+function updateMockDataModeUI() {
+  const topbarBadge = document.getElementById('topbarDataModeBadge');
+  const topbarText = document.getElementById('topbarDataModeText');
+  const masterToggle = document.getElementById('mockDataMasterToggle');
+  const statusLabel = document.getElementById('mockToggleStatusLabel');
+  const activeDetail = document.getElementById('activeSourceStatusDetail');
+
+  if (masterToggle) {
+    masterToggle.checked = !!AppState.useMockData;
+  }
+
+  if (AppState.useMockData) {
+    if (topbarBadge) {
+      topbarBadge.className = 'topbar-mode-badge mock-on';
+    }
+    if (topbarText) {
+      topbarText.innerHTML = `🟡 Mock Data Mode`;
+    }
+    if (statusLabel) {
+      statusLabel.className = 'mock-toggle-label on';
+      statusLabel.textContent = 'MOCK ON';
+    }
+    if (activeDetail) {
+      activeDetail.innerHTML = `Active Data Source: <strong>${AppState.currentDatasetName || 'Enterprise SaaS ARR'} (Mock Demo)</strong>`;
+    }
+  } else {
+    const activeCustom = AppState.customUploadedDatasets.find(d => d.id === AppState.activeCustomDatasetId);
+    const dsName = activeCustom ? activeCustom.name : (AppState.currentDatasetName || 'Live File');
+    if (topbarBadge) {
+      topbarBadge.className = 'topbar-mode-badge mock-off';
+    }
+    if (topbarText) {
+      topbarText.innerHTML = `🟢 Live Data: ${dsName}`;
+    }
+    if (statusLabel) {
+      statusLabel.className = 'mock-toggle-label off';
+      statusLabel.textContent = 'LIVE DATA ACTIVE';
+    }
+    if (activeDetail) {
+      activeDetail.innerHTML = `Active Data Source: <strong>${dsName} (Live Uploaded)</strong>`;
+    }
+  }
+}
+
+function toggleMockDataMode(isEnabled) {
+  AppState.useMockData = !!isEnabled;
+  localStorage.setItem('vyapaar_use_mock_data', AppState.useMockData ? 'true' : 'false');
+
+  fetch('/api/settings/mock-mode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ use_mock_data: AppState.useMockData })
+  }).catch(() => {});
+
+  if (AppState.useMockData) {
+    loadPresetDataset('saas_metrics');
+    showToast('Switched to Enterprise Mock Data Mode (Demo)', 'info');
+  } else {
+    if (AppState.customUploadedDatasets.length > 0) {
+      const activeCustom = AppState.customUploadedDatasets.find(d => d.id === AppState.activeCustomDatasetId) || AppState.customUploadedDatasets[0];
+      activateCustomDataset(activeCustom.id, false);
+      showToast(`Switched to Live Uploaded Data Mode (${activeCustom.name})`, 'success');
+    } else {
+      showToast('Live Mode Active: Drop a CSV / Excel file in "Feed Your Data" to populate workspace', 'warning');
+      updateDashboardWithCustomData([], 'No Uploaded Data');
+    }
+  }
+
+  updateMockDataModeUI();
+  renderUploadedSourcesGrid();
+}
+
+function renderUploadedSourcesGrid() {
+  const container = document.getElementById('uploadedSourcesGrid');
+  if (!container) return;
+
+  if (!AppState.customUploadedDatasets || AppState.customUploadedDatasets.length === 0) {
+    container.innerHTML = `
+      <div class="empty-custom-sources-card col-span-full">
+        <div class="empty-cs-icon"><i data-lucide="upload-cloud"></i></div>
+        <div class="empty-cs-title">No Custom Datasets Uploaded Yet</div>
+        <div class="empty-cs-desc">
+          Upload any CSV, Excel (.xlsx), or JSON file in the <strong>Feed Your Data</strong> studio. 
+          Your ingested files will appear here as primary live data sources.
+        </div>
+        <button class="btn-primary" onclick="switchView('data-feed')">
+          <i data-lucide="plus"></i> Ingest New Dataset
+        </button>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  let html = '';
+  AppState.customUploadedDatasets.forEach(dataset => {
+    const isThisActive = !AppState.useMockData && (dataset.id === AppState.activeCustomDatasetId || AppState.currentDatasetName === dataset.name);
+    const isExcel = dataset.name.toLowerCase().endsWith('.xlsx') || dataset.name.toLowerCase().endsWith('.xls');
+    const isJson = dataset.name.toLowerCase().endsWith('.json');
+    const iconClass = isExcel ? 'excel' : (isJson ? 'json' : 'csv');
+    const iconName = isExcel ? 'file-spreadsheet' : (isJson ? 'file-code' : 'file-text');
+
+    html += `
+      <div class="uploaded-source-card ${isThisActive ? 'is-active-primary' : ''}">
+        <div>
+          <div class="usc-header">
+            <div class="usc-icon-title">
+              <div class="usc-icon-box ${iconClass}">
+                <i data-lucide="${iconName}"></i>
+              </div>
+              <div>
+                <div class="usc-title-text" title="${dataset.name}">${dataset.name}</div>
+                <div class="text-xs text-sub">Uploaded ${dataset.uploadedAt || 'Recently'}</div>
+              </div>
+            </div>
+            ${isThisActive 
+              ? '<span class="usc-badge active"><i data-lucide="check-circle-2"></i> Active Primary</span>' 
+              : '<span class="usc-badge available">Available</span>'}
+          </div>
+
+          <div class="usc-metrics">
+            <div class="usc-m-item">
+              <span class="usc-m-label">Records</span>
+              <span class="usc-m-val">${(dataset.rowsCount || dataset.rows.length).toLocaleString()}</span>
+            </div>
+            <div class="usc-m-item">
+              <span class="usc-m-label">Dimensions</span>
+              <span class="usc-m-val">${dataset.colsCount || (dataset.columns ? dataset.columns.length : 0)} Cols</span>
+            </div>
+            <div class="usc-m-item">
+              <span class="usc-m-label">Integrity</span>
+              <span class="usc-m-val text-success">100% Clean</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="usc-footer">
+          <div class="flex items-center gap-2">
+            ${isThisActive ? `
+              <button class="btn-primary-sm" disabled style="opacity: 0.85;">
+                <i data-lucide="check"></i> Primary Live Source
+              </button>
+            ` : `
+              <button class="btn-primary-sm" onclick="activateCustomDataset('${dataset.id}')">
+                <i data-lucide="play"></i> Set as Primary Source
+              </button>
+            `}
+            <button class="btn-secondary-sm" onclick="inspectDatasetInFeed('${dataset.id}')" title="Inspect & Edit in Data Feed">
+              <i data-lucide="eye"></i> Inspect
+            </button>
+          </div>
+          <button class="icon-btn-ghost text-danger" onclick="deleteCustomDataset('${dataset.id}')" title="Delete Dataset">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
+}
+
+function inspectDatasetInFeed(id) {
+  const dataset = AppState.customUploadedDatasets.find(d => d.id === id);
+  if (!dataset) return;
+
+  AppState.currentDatasetName = dataset.name;
+  AppState.currentDatasetId = dataset.id;
+  AppState.currentRows = dataset.rows;
+  AppState.currentColumns = dataset.columns || Object.keys(dataset.rows[0] || {});
+
+  validateCurrentDataset();
+  renderPreviewTable();
+  renderSpreadsheetGrid();
+  populateAnalysisSelectors();
+
+  switchView('data-feed');
+  showToast(`Loaded "${dataset.name}" in Ingestion Studio`, 'info');
+}
+
+function activateCustomDataset(id, showNotification = true) {
+  const dataset = AppState.customUploadedDatasets.find(d => d.id === id);
+  if (!dataset) return;
+
+  AppState.activeCustomDatasetId = id;
+  AppState.currentDatasetId = id;
+  AppState.currentDatasetName = dataset.name;
+  AppState.currentRows = dataset.rows;
+  AppState.currentColumns = dataset.columns || Object.keys(dataset.rows[0] || {});
+
+  AppState.useMockData = false;
+  localStorage.setItem('vyapaar_use_mock_data', 'false');
+  localStorage.setItem('vyapaar_active_custom_id', id);
+
+  fetch('/api/settings/mock-mode', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ use_mock_data: false })
+  }).catch(() => {});
+
+  validateCurrentDataset();
+  renderPreviewTable();
+  renderSpreadsheetGrid();
+  populateAnalysisSelectors();
+
+  updateMockDataModeUI();
+  renderUploadedSourcesGrid();
+  updateDashboardWithCustomData(dataset.rows, dataset.name);
+
+  const sbName = document.getElementById('sidebarActiveDatasetName');
+  if (sbName) sbName.textContent = dataset.name;
+
+  if (showNotification) {
+    showToast(`🟢 Active Primary Data Source set to "${dataset.name}" (Live Mode)`, 'success');
+  }
+}
+
+function deleteCustomDataset(id) {
+  const dataset = AppState.customUploadedDatasets.find(d => d.id === id);
+  if (!dataset) return;
+  if (!confirm(`Delete dataset "${dataset.name}" from your workspace?`)) return;
+
+  AppState.customUploadedDatasets = AppState.customUploadedDatasets.filter(d => d.id !== id);
+  try {
+    localStorage.setItem('vyapaar_custom_datasets', JSON.stringify(AppState.customUploadedDatasets));
+  } catch (e) {}
+
+  fetch(`/api/datasets/custom/${id}`, { method: 'DELETE' }).catch(() => {});
+
+  if (AppState.activeCustomDatasetId === id) {
+    if (AppState.customUploadedDatasets.length > 0) {
+      activateCustomDataset(AppState.customUploadedDatasets[0].id);
+    } else {
+      toggleMockDataMode(true);
+    }
+  } else {
+    renderUploadedSourcesGrid();
+  }
+  showToast(`Deleted data source "${dataset.name}"`, 'info');
+}
+
+function updateDashboardWithCustomData(rows, name) {
+  if (!rows || rows.length === 0) return;
+
+  const kpiRecs = document.getElementById('kpiTotalRecords');
+  if (kpiRecs) kpiRecs.textContent = rows.length.toLocaleString();
+
+  const kpiSources = document.getElementById('kpiDataSources');
+  if (kpiSources) kpiSources.textContent = '1 Live Ingested';
+
+  const kpiUpdated = document.getElementById('kpiLastUpdated');
+  if (kpiUpdated) kpiUpdated.textContent = 'Live Upload';
+
+  const cols = Object.keys(rows[0] || {});
+  const numCols = cols.filter(c => rows.some(r => typeof r[c] === 'number' && !isNaN(r[c])));
+  const strCols = cols.filter(c => !numCols.includes(c));
+
+  if (numCols.length > 0) {
+    const primaryNumCol = numCols[0];
+    const totalVal = rows.reduce((acc, r) => acc + (Number(r[primaryNumCol]) || 0), 0);
+    const kpiArr = document.getElementById('kpiNetArr');
+    if (kpiArr) {
+      if (totalVal > 1000000) {
+        kpiArr.textContent = `$${(totalVal / 1000000).toFixed(2)}M`;
+      } else if (totalVal > 1000) {
+        kpiArr.textContent = `$${(totalVal / 1000).toFixed(1)}k`;
+      } else {
+        kpiArr.textContent = `${totalVal.toLocaleString()}`;
+      }
+    }
+  }
+
+  const trendChart = AppState.chartInstances.dashboardTrendChart;
+  if (trendChart && numCols.length > 0) {
+    const labelCol = strCols.length > 0 ? strCols[0] : cols[0];
+    const valCol = numCols[0];
+    const maxPoints = Math.min(rows.length, 12);
+    const sampleRows = rows.slice(0, maxPoints);
+
+    trendChart.data.labels = sampleRows.map(r => String(r[labelCol] || 'Item'));
+    trendChart.data.datasets[0].label = `${valCol} (Live)`;
+    trendChart.data.datasets[0].data = sampleRows.map(r => Number(r[valCol]) || 0);
+
+    if (trendChart.data.datasets[1]) {
+      const avg = sampleRows.reduce((a, r) => a + (Number(r[valCol]) || 0), 0) / sampleRows.length;
+      trendChart.data.datasets[1].label = `Average (${valCol})`;
+      trendChart.data.datasets[1].data = sampleRows.map(() => avg);
+    }
+    trendChart.options.scales.y.ticks.callback = v => v.toLocaleString();
+    trendChart.update();
+  }
+
+  const donutChart = AppState.chartInstances.dashboardDonutChart;
+  if (donutChart && strCols.length > 0) {
+    const catCol = strCols.find(c => /category|segment|region|state|type|status/i.test(c)) || strCols[0];
+    const counts = {};
+    rows.forEach(r => {
+      const val = String(r[catCol] || 'Other');
+      counts[val] = (counts[val] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    donutChart.data.labels = sorted.map(([k, v]) => `${k} (${Math.round(v / rows.length * 100)}%)`);
+    donutChart.data.datasets[0].data = sorted.map(([k, v]) => v);
+    donutChart.update();
+  }
+
+  const barChart = AppState.chartInstances.dashboardBarChart;
+  if (barChart && cols.length >= 2) {
+    const xCol = strCols[0] || cols[0];
+    const numCol = numCols[0] || cols[1];
+    const sliceRows = rows.slice(0, 5);
+    barChart.data.labels = sliceRows.map(r => String(r[xCol] || 'Item'));
+    barChart.data.datasets[0].label = `${numCol} (Live)`;
+    barChart.data.datasets[0].data = sliceRows.map(r => Number(r[numCol]) || 0);
+    if (barChart.data.datasets[1]) {
+      barChart.data.datasets[1].label = numCols[1] ? `${numCols[1]} (Live)` : 'Baseline';
+      barChart.data.datasets[1].data = numCols[1] ? sliceRows.map(r => Number(r[numCols[1]]) || 0) : sliceRows.map(() => 0);
+    }
+    barChart.update();
+  }
+}
+
+// ==========================================================================
+// 4. DATASET MANAGEMENT & PRESETS
 // ==========================================================================
 function loadPresetDataset(presetId) {
   const preset = AppState.presets[presetId];
@@ -657,16 +1039,55 @@ function finishUploadProcessing(name, rows) {
   if (status) status.textContent = 'Done (Verified)';
 
   if (rows && rows.length > 0) {
+    const cols = Object.keys(rows[0] || {});
+    const newDataset = {
+      id: 'custom_' + Date.now(),
+      name: name,
+      rows: rows,
+      columns: cols,
+      uploadedAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      rowsCount: rows.length,
+      colsCount: cols.length,
+      dataQualityScore: 100
+    };
+
+    // Filter out duplicate names and prepend
+    AppState.customUploadedDatasets = AppState.customUploadedDatasets.filter(d => d.name !== name);
+    AppState.customUploadedDatasets.unshift(newDataset);
+    AppState.activeCustomDatasetId = newDataset.id;
+
+    try {
+      localStorage.setItem('vyapaar_custom_datasets', JSON.stringify(AppState.customUploadedDatasets));
+      localStorage.setItem('vyapaar_active_custom_id', newDataset.id);
+    } catch (e) {
+      console.warn('LocalStorage notice:', e);
+    }
+
+    // Persist to backend
+    fetch('/api/datasets/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: newDataset.id, name: newDataset.name, rows: newDataset.rows })
+    }).catch(() => {});
+
     AppState.currentDatasetName = name;
+    AppState.currentDatasetId = newDataset.id;
     AppState.currentRows = rows;
-    AppState.currentColumns = Object.keys(rows[0]);
+    AppState.currentColumns = cols;
 
     validateCurrentDataset();
     renderPreviewTable();
     renderSpreadsheetGrid();
     populateAnalysisSelectors();
+    renderUploadedSourcesGrid();
 
-    showToast(`Successfully ingested "${name}" (${rows.length} rows)`, 'success');
+    if (AppState.useMockData) {
+      showToast(`📁 Ingested "${name}" (${rows.length} rows) as Connected Data Source!`, 'success');
+      updateMockDataModeUI();
+    } else {
+      activateCustomDataset(newDataset.id, false);
+      showToast(`✅ Ingested and activated "${name}" as Live Primary Data Source!`, 'success');
+    }
   }
 }
 

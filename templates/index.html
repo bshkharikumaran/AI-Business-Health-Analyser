@@ -221,6 +221,12 @@
           <i data-lucide="moon" id="themeIcon"></i>
         </button>
 
+        <!-- Data Mode Indicator Badge (Mock vs Live Uploaded) -->
+        <div class="topbar-mode-badge mock-on" id="topbarDataModeBadge" onclick="switchView('settings')" title="Click to change Data Mode in Settings">
+          <span class="mode-pulse-dot"></span>
+          <span id="topbarDataModeText">Mock Data Mode</span>
+        </div>
+
         <!-- Topbar AI Voice Assistant Trigger -->
         <button class="btn-topbar-ai" id="topbarAiBtn" onclick="toggleFloatingAiPanel()" title="Open Multilingual AI Voice Assistant">
           <span class="ai-sparkle-dot"></span>
@@ -922,6 +928,29 @@
           </div>
         </div>
 
+        <!-- UPLOADED CUSTOM DATASETS (LIVE USER INGESTED) -->
+        <div class="custom-sources-section">
+          <div class="section-title-group">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="section-heading"><i data-lucide="folder-check" class="inline-icon text-primary"></i> Uploaded Custom Datasets</h3>
+                <p class="section-subheading">Active CSV, Excel, and JSON datasets uploaded into your workspace. When Mock Mode is OFF, these live datasets power the entire platform.</p>
+              </div>
+              <button class="btn-secondary-sm" onclick="switchView('data-feed')">
+                <i data-lucide="upload-cloud"></i> Upload New Dataset
+              </button>
+            </div>
+          </div>
+          <div class="custom-sources-grid" id="uploadedSourcesGrid">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+
+        <div class="section-title-group mt-8">
+          <h3 class="section-heading"><i data-lucide="server" class="inline-icon text-indigo-500"></i> Enterprise Connected Connectors & Warehouses</h3>
+          <p class="section-subheading">External database replication pipelines, data lakes, and sync nodes.</p>
+        </div>
+
         <!-- Sources Grid -->
         <div class="sources-management-grid">
           <!-- Active Source Card 1 -->
@@ -1538,6 +1567,27 @@
 
           <!-- Settings Form Panel -->
           <div class="card">
+            <!-- MOCK DATA MODE TOGGLE HERO -->
+            <div class="mock-mode-hero-card">
+              <div class="mock-mode-header">
+                <div class="mock-mode-info">
+                  <h3><i data-lucide="database"></i> Work with All Mock Data (Demo Mode)</h3>
+                  <p>When <strong>ON</strong>, the platform uses pre-configured enterprise demo datasets (SaaS ARR, Supply Chain, Customer NPS). When <strong>OFF</strong>, all dashboard KPIs, charts, and AI assistant results strictly use your <strong>uploaded live datasets</strong>.</p>
+                </div>
+                <div class="mock-toggle-wrapper">
+                  <span class="mock-toggle-label on" id="mockToggleStatusLabel">MOCK ON</span>
+                  <label class="switch-toggle" title="Toggle between Mock Demo Data and Live Uploaded Data">
+                    <input type="checkbox" id="mockDataMasterToggle" checked onchange="toggleMockDataMode(this.checked)">
+                    <span class="slider-round"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center justify-between pt-3 border-t border-indigo-100 text-xs">
+                <span id="activeSourceStatusDetail">Active Data Source: <strong>Enterprise SaaS ARR & Subscriptions (Mock)</strong></span>
+                <button class="btn-ghost-sm" onclick="switchView('data-sources')">Manage Data Sources →</button>
+              </div>
+            </div>
+
             <div class="card-header">
               <h3 class="card-title">General Workspace Configuration</h3>
             </div>

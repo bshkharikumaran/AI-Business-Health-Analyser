@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Enterprise Business Analytics & Data Intelligence Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Modern Professional Fonts: Plus Jakarta Sans, Inter, IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for High Performance Interactive Visual Analytics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  
+  <!-- SheetJS (xlsx) for client-side Excel reading, parsing, and multi-sheet workbook generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Main Enterprise Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ========================================================================= -->
+  <!-- LEFT SIDEBAR NAVIGATION                                                    -->
+  <!-- ========================================================================= -->
+  <aside class="app-sidebar" id="sidebar">
+    <!-- Brand Logo / Header -->
+    <div class="sidebar-header">
+      <div class="brand-badge">
+        <div class="brand-icon">
+          <i data-lucide="bar-chart-3"></i>
+        </div>
+        <div class="brand-info">
+          <div class="brand-name">PULSE<span class="brand-highlight">ANALYTICS</span></div>
+          <div class="brand-tag">Enterprise BI Platform</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu List -->
+    <div class="sidebar-nav-container">
+      <div class="nav-group-label">Core Platform</div>
+      <nav class="sidebar-nav">
+        <button class="nav-link active" data-view="dashboard" id="nav-dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-link" data-view="data-feed" id="nav-data-feed">
+          <i data-lucide="upload-cloud"></i>
+          <span>Data Feed</span>
+          <span class="nav-pill">Ingest</span>
+        </button>
+        <button class="nav-link" data-view="data-sources" id="nav-data-sources">
+          <i data-lucide="database"></i>
+          <span>Data Sources</span>
+          <span class="nav-badge" id="sourceCountBadge">6</span>
+        </button>
+        <button class="nav-link" data-view="data-analysis" id="nav-data-analysis">
+          <i data-lucide="flask-conical"></i>
+          <span>Data Analysis</span>
+        </button>
+      </nav>
+
+      <div class="nav-group-label">Intelligence & Outputs</div>
+      <nav class="sidebar-nav">
+        <button class="nav-link" data-view="whatsapp-automation" id="nav-whatsapp-automation">
+          <i data-lucide="message-square"></i>
+          <span>WhatsApp Alerts</span>
+          <span class="nav-pill green pulse">LIVE</span>
+        </button>
+        <button class="nav-link" data-view="analytics" id="nav-analytics">
+          <i data-lucide="trending-up"></i>
+          <span>Analytics</span>
+        </button>
+        <button class="nav-link" data-view="insights" id="nav-insights">
+          <i data-lucide="sparkles"></i>
+          <span>Insights</span>
+          <span class="nav-pill pulse">AI</span>
+        </button>
+        <button class="nav-link" data-view="reports" id="nav-reports">
+          <i data-lucide="file-text"></i>
+          <span>Reports</span>
+        </button>
+        <button class="nav-link" data-view="saved-analysis" id="nav-saved-analysis">
+          <i data-lucide="bookmark"></i>
+          <span>Saved Analysis</span>
+        </button>
+      </nav>
+
+      <div class="nav-group-label">Management</div>
+      <nav class="sidebar-nav">
+        <button class="nav-link" data-view="settings" id="nav-settings">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </button>
+        <button class="nav-link" data-view="profile" id="nav-profile">
+          <i data-lucide="user-check"></i>
+          <span>User Profile</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Active Dataset Chip & Status -->
+    <div class="sidebar-footer">
+      <div class="active-dataset-card">
+        <div class="dataset-meta-top">
+          <span class="meta-label">Active Dataset</span>
+          <span class="status-dot green"></span>
+        </div>
+        <div class="dataset-title" id="sidebarActiveDatasetName">SaaS ARR & Subscriptions</div>
+        <div class="dataset-sub" id="sidebarActiveDatasetMeta">24 records · 10 columns · 100% Clean</div>
+      </div>
+      
+      <div class="sidebar-user-mini">
+        <div class="user-avatar-small">
+          <span>SJ</span>
+        </div>
+        <div class="user-info-small">
+          <div class="user-name">Sanjay Raman</div>
+          <div class="user-role">Principal BI Lead</div>
+        </div>
+        <button class="icon-btn-ghost" title="Logout" onclick="showToast('Logged in as Sanjay Raman (Admin)', 'info')">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN APP CONTAINER                                                         -->
+  <!-- ========================================================================= -->
+  <div class="app-main">
+
+    <!-- TOPBAR NAVIGATION -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn-ghost mobile-menu-toggle" id="menuToggleBtn" title="Toggle Menu">
+          <i data-lucide="menu"></i>
+        </button>
+        
+        <!-- Global Search Input with Cmd+K Trigger -->
+        <div class="global-search-wrapper" onclick="openSearchModal()">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" placeholder="Search datasets, metrics, insights, reports…" readonly class="search-input-fake">
+          <kbd class="search-kbd">⌘K</kbd>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Date / Time Filter Dropdown -->
+        <div class="date-filter-dropdown-container">
+          <button class="btn-filter" id="dateFilterBtn" onclick="toggleDateMenu()">
+            <i data-lucide="calendar"></i>
+            <span id="selectedDateRangeLabel">Last 30 Days</span>
+            <i data-lucide="chevron-down" class="chevron-sm"></i>
+          </button>
+          <div class="dropdown-menu" id="dateDropdownMenu">
+            <div class="dropdown-header">Time Horizon Filter</div>
+            <button class="dropdown-item" onclick="setDateRange('today', 'Today')">Today</button>
+            <button class="dropdown-item" onclick="setDateRange('7d', 'Last 7 Days')">Last 7 Days</button>
+            <button class="dropdown-item active" onclick="setDateRange('30d', 'Last 30 Days')">Last 30 Days</button>
+            <button class="dropdown-item" onclick="setDateRange('90d', 'Last 90 Days')">Last 90 Days</button>
+            <button class="dropdown-item" onclick="setDateRange('ytd', 'Year to Date (YTD)')">Year to Date (YTD)</button>
+            <button class="dropdown-item" onclick="setDateRange('all', 'All Historical Data')">All Historical Data</button>
+          </div>
+        </div>
+
+        <!-- Notification Bell with Flyout -->
+        <div class="notifications-wrapper">
+          <button class="icon-btn-ghost relative-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="badge-count" id="notifCountBadge">3</span>
+          </button>
+          <div class="dropdown-menu notif-menu" id="notifMenu">
+            <div class="notif-header">
+              <div class="notif-title">System & Data Alerts</div>
+              <button class="link-btn" onclick="clearNotifications()">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-item unread">
+                <div class="notif-icon-circle amber"><i data-lucide="alert-triangle"></i></div>
+                <div class="notif-content">
+                  <div class="notif-heading">Missing Values Remediated</div>
+                  <div class="notif-body">12 missing cells imputed automatically with median values.</div>
+                  <div class="notif-time">5 mins ago</div>
+                </div>
+              </div>
+              <div class="notif-item unread">
+                <div class="notif-icon-circle blue"><i data-lucide="database"></i></div>
+                <div class="notif-content">
+                  <div class="notif-heading">PostgreSQL Sync Completed</div>
+                  <div class="notif-body">Financial records synchronised with 100% schema integrity.</div>
+                  <div class="notif-time">28 mins ago</div>
+                </div>
+              </div>
+              <div class="notif-item">
+                <div class="notif-icon-circle green"><i data-lucide="check-circle-2"></i></div>
+                <div class="notif-content">
+                  <div class="notif-heading">Executive Report Ready</div>
+                  <div class="notif-body">Q3 SaaS Growth Summary generated & formatted.</div>
+                  <div class="notif-time">2 hours ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Documentation Modal Trigger -->
+        <button class="icon-btn-ghost" title="Help & Documentation" onclick="openHelpModal()">
+          <i data-lucide="help-circle"></i>
+        </button>
+
+        <!-- Theme Switcher (Light / Dark) -->
+        <button class="icon-btn-ghost" id="themeToggleBtn" title="Toggle Theme" onclick="toggleAppTheme()">
+          <i data-lucide="moon" id="themeIcon"></i>
+        </button>
+
+        <!-- Topbar AI Voice Assistant Trigger -->
+        <button class="btn-topbar-ai" id="topbarAiBtn" onclick="toggleFloatingAiPanel()" title="Open Multilingual AI Voice Assistant">
+          <span class="ai-sparkle-dot"></span>
+          <i data-lucide="bot"></i>
+          <span>AI Assistant</span>
+          <span class="topbar-ai-pill">Voice</span>
+        </button>
+
+        <!-- Primary Quick Action: + Add Data -->
+        <button class="btn-primary" onclick="openAddDataModal()">
+          <i data-lucide="plus"></i>
+          <span>Add Data</span>
+        </button>
+
+        <!-- User Profile Dropdown -->
+        <div class="user-menu-wrapper">
+          <button class="user-avatar-btn" onclick="toggleUserDropdown()" title="User Profile">
+            <div class="avatar-ring">
+              <span>SJ</span>
+            </div>
+          </button>
+          <div class="dropdown-menu user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+              <div class="user-name">Sanjay Raman</div>
+              <div class="user-email">sanjay.raman@enterprise.ai</div>
+              <div class="user-role-badge">Executive Administrator</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" onclick="switchView('profile')"><i data-lucide="user"></i> Account Settings</button>
+            <button class="dropdown-item" onclick="switchView('settings')"><i data-lucide="sliders"></i> Workspace Config</button>
+            <button class="dropdown-item" onclick="switchView('data-sources')"><i data-lucide="key"></i> API Keys & Webhooks</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item text-danger" onclick="showToast('Logged out of session', 'info')"><i data-lucide="log-out"></i> Log Out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT VIEWS CONTAINER -->
+    <main class="content-scroll" id="contentScroll">
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 1: DASHBOARD (EXECUTIVE OVERVIEW)                                -->
+      <!-- ===================================================================== -->
+      <section class="view-panel active" id="view-dashboard">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Platform / Executive Overview</div>
+            <h1 class="view-title">Enterprise Analytics Dashboard</h1>
+            <p class="view-subtitle">Real-time telemetry, dataset ingestion velocity, predictive KPI tracking, and automated business intelligence.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-secondary" onclick="switchView('data-feed')">
+              <i data-lucide="upload-cloud"></i>
+              <span>Feed New Dataset</span>
+            </button>
+            <button class="btn-primary" onclick="switchView('data-analysis')">
+              <i data-lucide="play"></i>
+              <span>Run Analysis</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6 EXECUTIVE KPI CARDS -->
+        <div class="kpi-grid">
+          <!-- KPI 1: Total Records -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Total Records</span>
+              <div class="kpi-icon-badge blue"><i data-lucide="layers"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiTotalRecords">142,850</div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive"><i data-lucide="trending-up"></i> +14.2%</span>
+              <span class="kpi-comparison">vs. previous period</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Active Data Sources -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Data Sources</span>
+              <div class="kpi-icon-badge indigo"><i data-lucide="database"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiDataSources">8 Connected</div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive"><i data-lucide="check"></i> 99.98%</span>
+              <span class="kpi-comparison">Ingestion uptime</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Key Performance Indicator -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Net ARR / Performance</span>
+              <div class="kpi-icon-badge emerald"><i data-lucide="dollar-sign"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiMainMetric">$8.45M</div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive"><i data-lucide="trending-up"></i> +18.4%</span>
+              <span class="kpi-comparison">Annual growth YoY</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: Data Quality Score -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Data Quality Score</span>
+              <div class="kpi-icon-badge cyan"><i data-lucide="shield-check"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiQualityScore">98.5%</div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive"><i data-lucide="award"></i> High Integrity</span>
+              <span class="kpi-comparison">0 Critical errors</span>
+            </div>
+          </div>
+
+          <!-- KPI 5: Latest Analysis -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Latest Analysis</span>
+              <div class="kpi-icon-badge amber"><i data-lucide="flask-conical"></i></div>
+            </div>
+            <div class="kpi-value small-text" id="kpiLatestAnalysis">Cohort Churn & MRR</div>
+            <div class="kpi-footer">
+              <span class="kpi-trend neutral"><i data-lucide="clock"></i> 8m ago</span>
+              <span class="kpi-comparison">Executed by AI</span>
+            </div>
+          </div>
+
+          <!-- KPI 6: Last Updated / Freshness -->
+          <div class="kpi-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Data Freshness</span>
+              <div class="kpi-icon-badge purple"><i data-lucide="refresh-cw"></i></div>
+            </div>
+            <div class="kpi-value" id="kpiLastUpdated">Live Sync</div>
+            <div class="kpi-footer">
+              <span class="status-pulse-dot"></span>
+              <span class="kpi-comparison">Real-time sync active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN DASHBOARD CHARTS ROW 1 -->
+        <div class="dashboard-grid-2-1">
+          <!-- Revenue / Performance Trend Chart Card -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Performance & Revenue Velocity Trend</h3>
+                <p class="card-subtitle">Historical actuals, 3-period moving average, and projected growth trajectory.</p>
+              </div>
+              <div class="card-controls">
+                <div class="pill-group">
+                  <button class="pill active" onclick="setChartMetric('arr', this)">ARR</button>
+                  <button class="pill" onclick="setChartMetric('subscribers', this)">Subscribers</button>
+                  <button class="pill" onclick="setChartMetric('retention', this)">Retention %</button>
+                </div>
+                <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('dashboardTrendChart', 'Performance & Revenue Velocity Trend')">
+                  <i data-lucide="maximize-2"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="dashboardTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Data Distribution / Segment Donut Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Category & Segment Share</h3>
+                <p class="card-subtitle">Distribution breakdown by active dimension.</p>
+              </div>
+            </div>
+            <div class="card-body chart-wrapper-donut">
+              <canvas id="dashboardDonutChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD ROW 2: CATEGORY BAR & RECENT ACTIVITY -->
+        <div class="dashboard-grid-1-1">
+          <!-- Category Comparison Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Cross-Regional Performance Comparison</h3>
+                <p class="card-subtitle">Contribution and margin volume by geographic territory.</p>
+              </div>
+              <div class="card-controls">
+                <button class="btn-ghost-sm" onclick="exportCurrentChart('dashboardBarChart', 'category_comparison')">
+                  <i data-lucide="download"></i> Export
+                </button>
+              </div>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="dashboardBarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Recent Analysis Activity Table -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Recent Analysis Activity</h3>
+                <p class="card-subtitle">Audit log of executed analytical queries and automated pipelines.</p>
+              </div>
+              <button class="btn-ghost-sm" onclick="switchView('saved-analysis')">View All</button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="data-table-clean">
+                  <thead>
+                    <tr>
+                      <th>Analysis Pipeline</th>
+                      <th>Dataset</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Runtime</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardActivityTableBody">
+                    <tr>
+                      <td><div class="font-medium">ARR Revenue Forecast 2026</div></td>
+                      <td><span class="chip-sm">SaaS ARR</span></td>
+                      <td><span class="badge-outline">Forecasting</span></td>
+                      <td><span class="status-badge success"><i data-lucide="check"></i> Completed</span></td>
+                      <td>1.2s</td>
+                      <td><button class="btn-table-action" onclick="runPresetAnalysis('forecasting')">Inspect</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="font-medium">Customer Cohort Churn Risk</div></td>
+                      <td><span class="chip-sm">E-Comm Users</span></td>
+                      <td><span class="badge-outline">Correlation</span></td>
+                      <td><span class="status-badge success"><i data-lucide="check"></i> Completed</span></td>
+                      <td>0.8s</td>
+                      <td><button class="btn-table-action" onclick="runPresetAnalysis('correlation')">Inspect</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="font-medium">SKU Stockout & Margin Outliers</div></td>
+                      <td><span class="chip-sm">Retail Inventory</span></td>
+                      <td><span class="badge-outline">Outliers</span></td>
+                      <td><span class="status-badge warning"><i data-lucide="alert-triangle"></i> 2 Outliers</span></td>
+                      <td>1.4s</td>
+                      <td><button class="btn-table-action" onclick="runPresetAnalysis('outliers')">Inspect</button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="font-medium">DSCR Credit Health Evaluation</div></td>
+                      <td><span class="chip-sm">Financial Risk</span></td>
+                      <td><span class="badge-outline">KPI Analysis</span></td>
+                      <td><span class="status-badge success"><i data-lucide="check"></i> Completed</span></td>
+                      <td>0.9s</td>
+                      <td><button class="btn-table-action" onclick="runPresetAnalysis('kpi')">Inspect</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD ROW 3: EXECUTIVE INSIGHTS & DATA QUALITY ALERTS -->
+        <div class="dashboard-grid-2-1">
+          <!-- Important AI Insights Stream -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i data-lucide="sparkles" class="icon-sparkle"></i> Priority Business Insights</h3>
+                <p class="card-subtitle">Automated discoveries and decision triggers generated across active telemetry.</p>
+              </div>
+              <button class="btn-ghost-sm" onclick="switchView('insights')">All Insights</button>
+            </div>
+            <div class="card-body">
+              <div class="insights-compact-grid" id="dashboardInsightsList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Quality & Governance Alerts -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Data Quality & Governance</h3>
+                <p class="card-subtitle">Integrity health, schema validation, and remediation status.</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="quality-gauge-card">
+                <div class="quality-gauge-circle">
+                  <span class="quality-score-number" id="dashboardQualityGaugeNum">98.5%</span>
+                  <span class="quality-score-label">Integrity</span>
+                </div>
+                <div class="quality-gauge-details">
+                  <div class="quality-item">
+                    <span class="q-label">Schema Consistency</span>
+                    <span class="q-val font-semibold text-success">100% Valid</span>
+                  </div>
+                  <div class="quality-item">
+                    <span class="q-label">Missing Values</span>
+                    <span class="q-val font-semibold" id="dashboardMissingCount">0 cells (0.0%)</span>
+                  </div>
+                  <div class="quality-item">
+                    <span class="q-label">Duplicate Rows</span>
+                    <span class="q-val font-semibold" id="dashboardDuplicateCount">0 duplicates</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alerts-mini-list" id="dashboardQualityAlerts">
+                <div class="alert-box-mini success">
+                  <i data-lucide="check-circle-2"></i>
+                  <div>
+                    <strong>Optimal Ingestion Health</strong>
+                    <p>All active schemas pass ISO/IEC 25012 data quality standards.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: DATA FEED (INGESTION & DATASET CENTER)                         -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-data-feed">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Data Ingestion / Ingestion Studio</div>
+            <h1 class="view-title">Feed Your Data</h1>
+            <p class="view-subtitle">Upload enterprise datasets, enter data in the manual spreadsheet editor, or connect external enterprise data sources.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-secondary" onclick="exportSpreadsheetCSV()">
+              <i data-lucide="download"></i>
+              <span>Export CSV</span>
+            </button>
+            <button class="btn-primary" onclick="validateCurrentDataset()">
+              <i data-lucide="shield-check"></i>
+              <span>Validate & Clean</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- INGESTION METHOD SELECTOR TABS -->
+        <div class="tabs-header">
+          <button class="tab-btn active" data-feed-tab="upload" onclick="switchFeedTab('upload')">
+            <i data-lucide="upload-cloud"></i>
+            <span>1. File Upload</span>
+          </button>
+          <button class="tab-btn" data-feed-tab="manual" onclick="switchFeedTab('manual')">
+            <i data-lucide="table"></i>
+            <span>2. Manual Data Entry Grid</span>
+          </button>
+          <button class="tab-btn" data-feed-tab="connect" onclick="switchFeedTab('connect')">
+            <i data-lucide="database"></i>
+            <span>3. Connect Data Source</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: FILE UPLOAD & PRESET SAMPLE DATASETS -->
+        <div class="feed-tab-content active" id="feedTab-upload">
+          <!-- Large Drag & Drop File Upload Area -->
+          <div class="card upload-main-card">
+            <div class="dropzone-area" id="fileDropZone">
+              <input type="file" id="fileInput" class="file-input-hidden" accept=".csv, .xlsx, .xls, .json, .pdf" onchange="handleFileSelect(event)">
+              <div class="dropzone-icon">
+                <i data-lucide="cloud-upload"></i>
+              </div>
+              <h3 class="dropzone-title">Drag & Drop your dataset here</h3>
+              <p class="dropzone-sub">Supported formats: <strong>CSV, Excel (.xlsx), JSON, PDF</strong> (Up to 50MB per file)</p>
+              
+              <div class="dropzone-actions">
+                <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                  <i data-lucide="folder-open"></i>
+                  <span>Browse Files</span>
+                </button>
+              </div>
+
+              <!-- Upload Progress Indicator -->
+              <div class="upload-progress-container" id="uploadProgressBox" style="display: none;">
+                <div class="progress-file-info">
+                  <div class="progress-filename" id="uploadFileName">financial_records_2026.csv</div>
+                  <div class="progress-status-badge" id="uploadStatusBadge">Uploading & Parsing…</div>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" id="uploadProgressFill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-meta">
+                  <span id="uploadFileSize">2.4 MB</span>
+                  <button class="btn-remove-file" onclick="cancelFileUpload()">Remove File</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1-Click Preset Enterprise Datasets -->
+          <div class="section-title-group mt-6">
+            <h3 class="section-heading">Instant Preset Enterprise Datasets</h3>
+            <p class="section-subheading">Select any pre-configured enterprise dataset to instantly populate the analytics workspace.</p>
+          </div>
+
+          <div class="preset-datasets-grid">
+            <!-- Preset 1: SaaS Metrics -->
+            <div class="preset-card active" onclick="loadPresetDataset('saas_metrics')">
+              <div class="preset-card-header">
+                <div class="preset-icon blue"><i data-lucide="line-chart"></i></div>
+                <span class="badge-outline">Finance & SaaS</span>
+              </div>
+              <div class="preset-card-title">Enterprise SaaS ARR & Subscriptions (2025-2026)</div>
+              <div class="preset-card-desc">Monthly recurring revenue, customer acquisition cost, churn rate, LTV, and active tier accounts.</div>
+              <div class="preset-card-footer">
+                <span>24 Records · 10 Dimensions</span>
+                <span class="preset-load-label">Load Dataset →</span>
+              </div>
+            </div>
+
+            <!-- Preset 2: Retail Supply Chain -->
+            <div class="preset-card" onclick="loadPresetDataset('retail_supply_chain')">
+              <div class="preset-card-header">
+                <div class="preset-icon amber"><i data-lucide="package"></i></div>
+                <span class="badge-outline">Supply Chain</span>
+              </div>
+              <div class="preset-card-title">Global Retail & Supply Chain Inventory</div>
+              <div class="preset-card-desc">Multi-category SKU ledger tracking stock levels, unit economics, reorder triggers, and lead times.</div>
+              <div class="preset-card-footer">
+                <span>20 Records · 10 Dimensions</span>
+                <span class="preset-load-label">Load Dataset →</span>
+              </div>
+            </div>
+
+            <!-- Preset 3: E-Commerce Customers -->
+            <div class="preset-card" onclick="loadPresetDataset('ecommerce_customers')">
+              <div class="preset-card-header">
+                <div class="preset-icon emerald"><i data-lucide="users"></i></div>
+                <span class="badge-outline">Customer Analytics</span>
+              </div>
+              <div class="preset-card-title">E-Commerce Customer Behavior & Cohort Churn</div>
+              <div class="preset-card-desc">Customer purchase patterns, lifetime order volume, satisfaction ratings, NPS cohorts, and churn.</div>
+              <div class="preset-card-footer">
+                <span>20 Records · 10 Dimensions</span>
+                <span class="preset-load-label">Load Dataset →</span>
+              </div>
+            </div>
+
+            <!-- Preset 4: Financial Risk -->
+            <div class="preset-card" onclick="loadPresetDataset('financial_credit')">
+              <div class="preset-card-header">
+                <div class="preset-icon purple"><i data-lucide="shield-alert"></i></div>
+                <span class="badge-outline">Risk & Compliance</span>
+              </div>
+              <div class="preset-card-title">Financial Risk & Credit Assessment</div>
+              <div class="preset-card-desc">Enterprise financial metrics, working capital runway, DSCR, credit score, and risk bands.</div>
+              <div class="preset-card-footer">
+                <span>16 Records · 10 Dimensions</span>
+                <span class="preset-load-label">Load Dataset →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: MANUAL DATA ENTRY (SPREADSHEET GRID) -->
+        <div class="feed-tab-content" id="feedTab-manual">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Manual Data Entry & Editable Grid</h3>
+                <p class="card-subtitle">Directly manipulate dataset cells, append records, add custom columns, and perform inline spreadsheet editing.</p>
+              </div>
+              <div class="card-controls">
+                <button class="btn-secondary" onclick="addSpreadsheetRow()"><i data-lucide="plus"></i> Add Row</button>
+                <button class="btn-secondary" onclick="addSpreadsheetColumn()"><i data-lucide="columns"></i> Add Column</button>
+                <button class="btn-secondary" onclick="duplicateSelectedRow()"><i data-lucide="copy"></i> Duplicate</button>
+                <button class="btn-danger-ghost" onclick="deleteSelectedRow()"><i data-lucide="trash-2"></i> Delete</button>
+              </div>
+            </div>
+
+            <!-- Table Filter Toolbar -->
+            <div class="spreadsheet-toolbar">
+              <div class="toolbar-search">
+                <i data-lucide="search"></i>
+                <input type="text" id="gridSearchInput" placeholder="Filter rows in grid…" oninput="filterSpreadsheetRows(this.value)">
+              </div>
+              <div class="toolbar-stats">
+                <span id="gridRowsCount">24 rows</span> · <span id="gridColsCount">10 columns</span>
+              </div>
+            </div>
+
+            <!-- Interactive Editable Table -->
+            <div class="card-body p-0">
+              <div class="table-responsive-grid" id="spreadsheetGridContainer">
+                <!-- Dynamically rendered editable grid -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: CONNECT DATA SOURCE -->
+        <div class="feed-tab-content" id="feedTab-connect">
+          <div class="connect-sources-grid">
+            <!-- Source 1: PostgreSQL -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box postgres"><i data-lucide="database"></i></div>
+                <span class="status-badge success">Connected</span>
+              </div>
+              <div class="source-title">PostgreSQL Database</div>
+              <div class="source-desc">Production read-replica connecting to enterprise data warehouse.</div>
+              <div class="source-meta">Auto-sync: Every 15 mins · Last sync 2m ago</div>
+              <button class="btn-secondary-full" onclick="openConnectModal('PostgreSQL Database')">Configure Connection</button>
+            </div>
+
+            <!-- Source 2: REST API -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box api"><i data-lucide="globe"></i></div>
+                <span class="status-badge success">Active</span>
+              </div>
+              <div class="source-title">REST API / Webhook Endpoint</div>
+              <div class="source-desc">Ingest live telemetry payloads via authenticated JSON webhooks.</div>
+              <div class="source-meta">Real-time webhook listener enabled</div>
+              <button class="btn-secondary-full" onclick="openConnectModal('REST API / Webhooks')">Configure Webhook</button>
+            </div>
+
+            <!-- Source 3: Google Sheets -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box sheets"><i data-lucide="file-spreadsheet"></i></div>
+                <span class="status-badge ready">Ready</span>
+              </div>
+              <div class="source-title">Google Sheets Live Sync</div>
+              <div class="source-desc">Direct 2-way synchronization with collaborative Google Worksheets.</div>
+              <div class="source-meta">OAuth 2.0 Integration Available</div>
+              <button class="btn-primary-full" onclick="openConnectModal('Google Sheets')">Connect Sheets</button>
+            </div>
+
+            <!-- Source 4: Microsoft Excel Cloud -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box excel"><i data-lucide="file-text"></i></div>
+                <span class="status-badge ready">Ready</span>
+              </div>
+              <div class="source-title">Microsoft 365 Excel Cloud</div>
+              <div class="source-desc">OneDrive and SharePoint enterprise workbook connector.</div>
+              <div class="source-meta">Microsoft Graph API Ready</div>
+              <button class="btn-primary-full" onclick="openConnectModal('Microsoft Excel 365')">Connect Excel</button>
+            </div>
+
+            <!-- Source 5: CSV / SFTP Storage -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box sftp"><i data-lucide="server"></i></div>
+                <span class="status-badge success">Connected</span>
+              </div>
+              <div class="source-title">Enterprise SFTP / CSV Ingest</div>
+              <div class="source-desc">Automated batch ingestion from remote secure FTP file drop locations.</div>
+              <div class="source-meta">Nightly batch job scheduled (00:00 UTC)</div>
+              <button class="btn-secondary-full" onclick="openConnectModal('SFTP Storage')">Manage SFTP</button>
+            </div>
+
+            <!-- Source 6: Snowflake & AWS S3 -->
+            <div class="source-card">
+              <div class="source-card-top">
+                <div class="source-icon-box cloud"><i data-lucide="cloud"></i></div>
+                <span class="status-badge ready">Ready</span>
+              </div>
+              <div class="source-title">Snowflake / AWS S3 Data Lake</div>
+              <div class="source-desc">Direct query execution and Parquet/Delta table pipeline streaming.</div>
+              <div class="source-meta">IAM Role / Key-pair authentication</div>
+              <button class="btn-primary-full" onclick="openConnectModal('Snowflake / AWS S3')">Connect Cloud</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- DATA PREVIEW & VALIDATION SECTION                                   -->
+        <!-- =================================================================== -->
+        <div class="section-title-group mt-8">
+          <h3 class="section-heading">Data Preview & Schema Inspection</h3>
+          <p class="section-subheading">Inferred metadata, column data types, missing value audit, and sample row inspection.</p>
+        </div>
+
+        <!-- Preview Metrics Bar -->
+        <div class="preview-metrics-bar">
+          <div class="preview-metric-item">
+            <span class="pm-label">Total Rows</span>
+            <span class="pm-value" id="previewTotalRows">24</span>
+          </div>
+          <div class="preview-metric-item">
+            <span class="pm-label">Total Columns</span>
+            <span class="pm-value" id="previewTotalCols">10</span>
+          </div>
+          <div class="preview-metric-item">
+            <span class="pm-label">Missing Values</span>
+            <span class="pm-value" id="previewMissingCount">0 (0.0%)</span>
+          </div>
+          <div class="preview-metric-item">
+            <span class="pm-label">Duplicates</span>
+            <span class="pm-value" id="previewDuplicateCount">0</span>
+          </div>
+          <div class="preview-metric-item highlight">
+            <span class="pm-label">Data Quality</span>
+            <span class="pm-value text-success" id="previewQualityScore">100.0%</span>
+          </div>
+        </div>
+
+        <!-- Preview Table with Column Type Filter Tabs -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <div class="column-type-filter-group">
+              <button class="filter-pill active" onclick="filterPreviewColumns('all', this)">All Columns</button>
+              <button class="filter-pill" onclick="filterPreviewColumns('numeric', this)">Numeric</button>
+              <button class="filter-pill" onclick="filterPreviewColumns('text', this)">Text</button>
+              <button class="filter-pill" onclick="filterPreviewColumns('date', this)">Date</button>
+              <button class="filter-pill" onclick="filterPreviewColumns('missing', this)">Missing Highlighted</button>
+            </div>
+            <div class="table-search-box">
+              <i data-lucide="search"></i>
+              <input type="text" placeholder="Search preview records…" oninput="filterPreviewRows(this.value)">
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="data-table-preview" id="previewDataTable">
+                <thead id="previewTableHead">
+                  <!-- Inferred schema columns -->
+                </thead>
+                <tbody id="previewTableBody">
+                  <!-- First 15 preview rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- DATA VALIDATION & CLEANING SUITE                                    -->
+        <!-- =================================================================== -->
+        <div class="section-title-group mt-8">
+          <h3 class="section-heading">Data Validation & Quality Remediation</h3>
+          <p class="section-subheading">Automated anomaly detection, duplicate primary key resolution, and 1-click cleaning transforms.</p>
+        </div>
+
+        <div class="validation-container-card card">
+          <div class="validation-header">
+            <div class="quality-badge-large">
+              <div class="q-score-title">Integrity Score</div>
+              <div class="q-score-big" id="validationScoreBig">100%</div>
+              <div class="q-score-subtitle">High Quality Dataset</div>
+            </div>
+            <div class="validation-summary-text">
+              <h4>Automated Quality Audit Summary</h4>
+              <p id="validationSummaryParagraph">The active dataset conforms to enterprise schema validation standards. No critical anomalies, NaN values, or formatting conflicts were found.</p>
+              <div class="validation-quick-actions">
+                <button class="btn-primary" onclick="applyFullCleaning()">
+                  <i data-lucide="wand-2"></i>
+                  <span>Fix All Automatically</span>
+                </button>
+                <button class="btn-secondary" onclick="validateCurrentDataset()">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Re-Run Audit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Identified Remediation Issues List -->
+          <div class="validation-issues-list" id="validationIssuesList">
+            <!-- Dynamically populated remediation cards -->
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 3: DATA SOURCES (INTEGRATIONS & CONNECTORS)                      -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-data-sources">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Integrations / Data Sources</div>
+            <h1 class="view-title">Connected Data Sources & Pipelines</h1>
+            <p class="view-subtitle">Monitor live database connections, schema sync health, webhook endpoints, and replication schedules.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="openConnectModal('New Connection')">
+              <i data-lucide="plus"></i>
+              <span>Add New Source</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sources Grid -->
+        <div class="sources-management-grid">
+          <!-- Active Source Card 1 -->
+          <div class="card source-mgmt-card">
+            <div class="source-mgmt-header">
+              <div class="source-info-group">
+                <div class="source-icon-box postgres"><i data-lucide="database"></i></div>
+                <div>
+                  <h4 class="source-name">Enterprise Postgres DW</h4>
+                  <div class="source-host">dw-prod-replica.aws.internal:5432 / db_analytics</div>
+                </div>
+              </div>
+              <span class="status-badge success"><span class="status-pulse-dot"></span> Active (99.98%)</span>
+            </div>
+            <div class="source-metrics-strip">
+              <div><span class="strip-label">Tables</span><span class="strip-val">18 Synchronized</span></div>
+              <div><span class="strip-label">Last Ingest</span><span class="strip-val">2 mins ago</span></div>
+              <div><span class="strip-label">Throughput</span><span class="strip-val">4.2k recs/sec</span></div>
+            </div>
+            <div class="source-mgmt-footer">
+              <button class="btn-ghost-sm" onclick="showToast('Synchronizing Postgres schema…', 'info')"><i data-lucide="refresh-cw"></i> Sync Now</button>
+              <button class="btn-ghost-sm" onclick="openConnectModal('Enterprise Postgres DW')"><i data-lucide="settings"></i> Manage</button>
+            </div>
+          </div>
+
+          <!-- Active Source Card 2 -->
+          <div class="card source-mgmt-card">
+            <div class="source-mgmt-header">
+              <div class="source-info-group">
+                <div class="source-icon-box api"><i data-lucide="globe"></i></div>
+                <div>
+                  <h4 class="source-name">Stripe & Billing Webhooks</h4>
+                  <div class="source-host">https://api.pulse.enterprise.ai/v1/webhooks/billing</div>
+                </div>
+              </div>
+              <span class="status-badge success">Live Streaming</span>
+            </div>
+            <div class="source-metrics-strip">
+              <div><span class="strip-label">Events</span><span class="strip-val">1,240 Today</span></div>
+              <div><span class="strip-label">Latency</span><span class="strip-val">48 ms</span></div>
+              <div><span class="strip-label">Error Rate</span><span class="strip-val">0.00%</span></div>
+            </div>
+            <div class="source-mgmt-footer">
+              <button class="btn-ghost-sm" onclick="showToast('Webhook health verified', 'success')"><i data-lucide="check"></i> Test Payload</button>
+              <button class="btn-ghost-sm" onclick="openConnectModal('Stripe & Billing Webhooks')"><i data-lucide="settings"></i> Configure</button>
+            </div>
+          </div>
+
+          <!-- Active Source Card 3 -->
+          <div class="card source-mgmt-card">
+            <div class="source-mgmt-header">
+              <div class="source-info-group">
+                <div class="source-icon-box sftp"><i data-lucide="server"></i></div>
+                <div>
+                  <h4 class="source-name">Inventory Batch SFTP</h4>
+                  <div class="source-host">sftp://sftp.retail-logistics.com:22 /incoming/csv/</div>
+                </div>
+              </div>
+              <span class="status-badge success">Scheduled</span>
+            </div>
+            <div class="source-metrics-strip">
+              <div><span class="strip-label">Cadence</span><span class="strip-val">Daily 00:00 UTC</span></div>
+              <div><span class="strip-label">Last Ingest</span><span class="strip-val">9 hours ago</span></div>
+              <div><span class="strip-label">File Size</span><span class="strip-val">18.4 MB</span></div>
+            </div>
+            <div class="source-mgmt-footer">
+              <button class="btn-ghost-sm" onclick="showToast('Triggered immediate SFTP poll', 'info')"><i data-lucide="play"></i> Poll Now</button>
+              <button class="btn-ghost-sm" onclick="openConnectModal('Inventory Batch SFTP')"><i data-lucide="settings"></i> Manage</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 4: DATA ANALYSIS WORKSPACE                                       -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-data-analysis">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Analytics / Guided Analysis Workspace</div>
+            <h1 class="view-title">Dedicated Analysis Workspace</h1>
+            <p class="view-subtitle">Select your analytical model, configure variables and aggregation metrics, and generate instant statistical insights.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="executeSelectedAnalysis()">
+              <i data-lucide="play"></i>
+              <span>Run Analysis</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- GUIDED STEPPER WORKFLOW BAR -->
+        <div class="analysis-workflow-bar">
+          <div class="step-item active">
+            <span class="step-num">1</span>
+            <span class="step-label">Select Dataset</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step-item active">
+            <span class="step-num">2</span>
+            <span class="step-label">Choose Analysis Type</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step-item active">
+            <span class="step-num">3</span>
+            <span class="step-label">Configure Variables</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step-item active">
+            <span class="step-num">4</span>
+            <span class="step-label">Apply Filters</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step-item highlight">
+            <span class="step-num">5</span>
+            <span class="step-label">Generate Results</span>
+          </div>
+        </div>
+
+        <!-- ANALYSIS CONFIGURATION CONTROL PANEL -->
+        <div class="card analysis-control-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Analysis Configuration</h3>
+              <p class="card-subtitle">Define parameters and statistical methods for the current computational run.</p>
+            </div>
+            <button class="btn-ghost-sm" onclick="resetAnalysisForm()"><i data-lucide="rotate-ccw"></i> Reset Defaults</button>
+          </div>
+          <div class="card-body">
+            <div class="form-grid-3">
+              <!-- Select Dataset -->
+              <div class="form-group">
+                <label class="form-label">Active Dataset</label>
+                <select class="form-select" id="analysisDatasetSelect" onchange="handleAnalysisDatasetChange(this.value)">
+                  <option value="saas_metrics" selected>Enterprise SaaS ARR & Subscriptions</option>
+                  <option value="retail_supply_chain">Global Retail & Supply Chain Inventory</option>
+                  <option value="ecommerce_customers">E-Commerce Customer Behavior & Churn</option>
+                  <option value="financial_credit">Financial Risk & Credit Assessment</option>
+                </select>
+              </div>
+
+              <!-- Select Analysis Type -->
+              <div class="form-group">
+                <label class="form-label">Analysis Type</label>
+                <select class="form-select" id="analysisTypeSelect" onchange="handleAnalysisTypeChange(this.value)">
+                  <option value="descriptive">Descriptive Analysis (Mean, Median, Skewness, IQR)</option>
+                  <option value="trend" selected>Trend Analysis (Moving Average & Trajectory)</option>
+                  <option value="comparative">Comparative Analysis (Cohort & Category vs Benchmark)</option>
+                  <option value="correlation">Correlation Analysis (Pearson r Matrix & Scatter)</option>
+                  <option value="distribution">Distribution Analysis (Histograms & Boxplot)</option>
+                  <option value="kpi">KPI Analysis (Target vs Actual & Attainment %)</option>
+                  <option value="forecasting">Forecasting (Predictive 4-Period Linear + Holt)</option>
+                  <option value="outliers">Outlier & Anomaly Detection (Z-Score > 2σ)</option>
+                </select>
+              </div>
+
+              <!-- Select Metric / Aggregation -->
+              <div class="form-group">
+                <label class="form-label">Metric Aggregation</label>
+                <select class="form-select" id="analysisMetricSelect">
+                  <option value="sum" selected>Sum (Total Volume)</option>
+                  <option value="avg">Average (Mean)</option>
+                  <option value="median">Median (50th Percentile)</option>
+                  <option value="count">Record Count</option>
+                  <option value="max">Maximum Value</option>
+                  <option value="min">Minimum Value</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Variable Selection Row -->
+            <div class="form-grid-3 mt-4">
+              <!-- Select X-Axis / Primary Dimension -->
+              <div class="form-group">
+                <label class="form-label" id="labelXVar">X-Axis Variable (Time / Dimension)</label>
+                <select class="form-select" id="analysisXVarSelect">
+                  <!-- Dynamically populated from active dataset columns -->
+                </select>
+              </div>
+
+              <!-- Select Y-Axis / Target Metric -->
+              <div class="form-group">
+                <label class="form-label" id="labelYVar">Y-Axis Variable (Target Metric)</label>
+                <select class="form-select" id="analysisYVarSelect">
+                  <!-- Dynamically populated from active dataset columns -->
+                </select>
+              </div>
+
+              <!-- Select Category / Group By -->
+              <div class="form-group">
+                <label class="form-label">Category / Group By (Optional)</label>
+                <select class="form-select" id="analysisGroupVarSelect">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Action Trigger Bar -->
+            <div class="analysis-action-bar mt-6">
+              <div class="analysis-hint" id="analysisTypeHintText">
+                <i data-lucide="info"></i>
+                <span>Trend analysis evaluates temporal momentum, 3-point rolling averages, and linear regression slope.</span>
+              </div>
+              <button class="btn-primary-lg" id="btnRunAnalysisMain" onclick="executeSelectedAnalysis()">
+                <i data-lucide="play"></i>
+                <span>Run Analysis</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYSIS RESULTS OUTPUT CONTAINER -->
+        <div class="analysis-results-section mt-6" id="analysisResultsContainer" style="display: none;">
+          <!-- Results Header & Key Takeaway Banner -->
+          <div class="card results-banner-card">
+            <div class="results-banner-content">
+              <div class="results-badge-group">
+                <span class="badge-solid blue" id="resultAnalysisTypeBadge">Trend Analysis</span>
+                <span class="badge-outline" id="resultDatasetNameBadge">SaaS ARR & Subscriptions</span>
+              </div>
+              <h2 class="results-heading" id="resultHeadlineTitle">Statistical Analysis Completed Successfully</h2>
+              <p class="results-takeaway" id="resultTakeawayParagraph">Loading statistical findings…</p>
+            </div>
+            <div class="results-banner-actions">
+              <button class="btn-secondary" onclick="saveCurrentAnalysisQuery()"><i data-lucide="bookmark"></i> Save Query</button>
+              <button class="btn-primary" onclick="exportAnalysisSummary()"><i data-lucide="download"></i> Export Results</button>
+            </div>
+          </div>
+
+          <!-- Statistical Metrics Grid & Visual Chart -->
+          <div class="dashboard-grid-1-2 mt-6">
+            <!-- Statistical Summary Breakdown Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Statistical Metrics Breakdown</h3>
+              </div>
+              <div class="card-body p-0">
+                <div class="stats-table-wrapper" id="analysisStatsTableWrapper">
+                  <!-- Dynamically populated metrics table -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Visual Chart Output Card -->
+            <div class="card chart-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" id="analysisChartTitle">Analysis Visualization Output</h3>
+                  <p class="card-subtitle" id="analysisChartSubtitle">High precision interactive rendering.</p>
+                </div>
+                <div class="card-controls">
+                  <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('analysisCanvas', 'Analysis Visualization')">
+                    <i data-lucide="maximize-2"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body chart-wrapper">
+                <canvas id="analysisCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 5: VISUAL ANALYTICS STUDIO                                       -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-analytics">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Analytics / Visual Analytics Board</div>
+            <h1 class="view-title">Visual Analytics Studio</h1>
+            <p class="view-subtitle">Interactive visual exploration across multi-series lines, grouped bars, area distributions, and scatter matrices.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-secondary" onclick="exportAllCharts()">
+              <i data-lucide="download"></i>
+              <span>Export All Charts</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Chart Range Filter Pills -->
+        <div class="analytics-filter-bar">
+          <span class="filter-label">Quick Horizon:</span>
+          <div class="pill-group">
+            <button class="pill" onclick="setVisualTimeFilter('1d', this)">1D</button>
+            <button class="pill" onclick="setVisualTimeFilter('7d', this)">7D</button>
+            <button class="pill" onclick="setVisualTimeFilter('1m', this)">1M</button>
+            <button class="pill active" onclick="setVisualTimeFilter('3m', this)">3M</button>
+            <button class="pill" onclick="setVisualTimeFilter('1y', this)">1Y</button>
+            <button class="pill" onclick="setVisualTimeFilter('all', this)">All</button>
+          </div>
+        </div>
+
+        <!-- MULTI-CHART GRID -->
+        <div class="dashboard-grid-1-1 mt-6">
+          <!-- Multi-Series Line Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Dual-Metric Correlation (ARR vs MRR)</h3>
+                <p class="card-subtitle">Co-evolution of ARR and Monthly Recurring Revenue streams.</p>
+              </div>
+              <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('visualMultiLineChart', 'Dual-Metric Correlation')"><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="visualMultiLineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Stacked Bar Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Regional Growth Contribution</h3>
+                <p class="card-subtitle">Volume contribution categorized by North America, EMEA, and APAC.</p>
+              </div>
+              <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('visualStackedBarChart', 'Regional Growth Contribution')"><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="visualStackedBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 2: AREA CHART & SCATTER MATRIX -->
+        <div class="dashboard-grid-1-1 mt-6">
+          <!-- Gradient Area Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Active Subscriber Growth Velocity</h3>
+                <p class="card-subtitle">Cumulative account expansion trajectory over time.</p>
+              </div>
+              <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('visualAreaChart', 'Active Subscriber Growth Velocity')"><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="visualAreaChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Scatter Correlation Plot -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">CAC vs LTV Efficiency Matrix</h3>
+                <p class="card-subtitle">Scatter distribution comparing logo acquisition cost against lifetime contract value.</p>
+              </div>
+              <button class="icon-btn-ghost" title="Fullscreen" onclick="openChartFullscreen('visualScatterChart', 'CAC vs LTV Efficiency Matrix')"><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="visualScatterChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 6: AI-POWERED BUSINESS INSIGHTS                                  -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-insights">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Intelligence / AI Business Insights</div>
+            <h1 class="view-title">Business Insights & Decision Triggers</h1>
+            <p class="view-subtitle">Automated anomaly discovery, operational risk alerts, growth opportunities, and executive recommendations.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="refreshInsightsFeed()">
+              <i data-lucide="refresh-cw"></i>
+              <span>Refresh AI Insights</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills by Impact Category -->
+        <div class="insights-filter-bar">
+          <button class="insight-filter-btn active" onclick="filterInsightCards('all', this)">All Insights (4)</button>
+          <button class="insight-filter-btn positive" onclick="filterInsightCards('positive', this)">🟢 Positive (1)</button>
+          <button class="insight-filter-btn negative" onclick="filterInsightCards('negative', this)">🔴 Risk & Churn (1)</button>
+          <button class="insight-filter-btn warning" onclick="filterInsightCards('warning', this)">🟡 Operational Warnings (1)</button>
+          <button class="insight-filter-btn neutral" onclick="filterInsightCards('neutral', this)">🔵 Efficiency & CAC (1)</button>
+        </div>
+
+        <!-- Rich Insights Cards Grid -->
+        <div class="insights-full-grid mt-6" id="insightsFullGrid">
+          <!-- Dynamically populated from logic.py insights -->
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 7: REPORT GENERATION STUDIO                                      -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-reports">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Executive Outputs / Report Studio</div>
+            <h1 class="view-title">Executive Report Studio</h1>
+            <p class="view-subtitle">Build customized corporate intelligence briefings, export print-ready executive PDFs, multi-tab Excel workbooks, or CSV summaries.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-secondary" onclick="exportReportExcel()">
+              <i data-lucide="file-spreadsheet"></i>
+              <span>Export Excel (.xlsx)</span>
+            </button>
+            <button class="btn-primary" onclick="exportReportPDF()">
+              <i data-lucide="file-down"></i>
+              <span>Export PDF Report</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid-1-2">
+          <!-- Report Builder Configuration Sidebar -->
+          <div class="card report-config-card">
+            <div class="card-header">
+              <h3 class="card-title">Report Builder</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Report Title</label>
+                <input type="text" class="form-input" id="reportTitleInput" value="Q3 Enterprise Business Intelligence & ARR Briefing">
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Executive Author</label>
+                <input type="text" class="form-input" id="reportAuthorInput" value="Sanjay Raman · Principal BI Lead">
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Target Dataset</label>
+                <select class="form-select" id="reportDatasetSelect" onchange="generateExecutiveReport()">
+                  <option value="saas_metrics" selected>Enterprise SaaS ARR & Subscriptions</option>
+                  <option value="retail_supply_chain">Global Retail & Supply Chain Inventory</option>
+                  <option value="ecommerce_customers">E-Commerce Customer Behavior & Churn</option>
+                  <option value="financial_credit">Financial Risk & Credit Assessment</option>
+                </select>
+              </div>
+
+              <div class="form-group mt-4">
+                <label class="form-label">Included Report Sections</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secSummary" checked onchange="generateExecutiveReport()">
+                    <span>Executive Summary</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secKPIs" checked onchange="generateExecutiveReport()">
+                    <span>Key Performance Indicators</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secAnalysis" checked onchange="generateExecutiveReport()">
+                    <span>Detailed Statistical Analysis</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secDataQuality" checked onchange="generateExecutiveReport()">
+                    <span>Data Quality & Governance Audit</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secCharts" checked onchange="generateExecutiveReport()">
+                    <span>Charts & Visual Analytics</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" id="secInsights" checked onchange="generateExecutiveReport()">
+                    <span>AI Strategic Recommendations</span>
+                  </label>
+                </div>
+              </div>
+
+              <button class="btn-primary-full mt-4" onclick="generateExecutiveReport()">
+                <i data-lucide="refresh-cw"></i>
+                <span>Generate Live Preview</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Report Document Preview Paper -->
+          <div class="card report-paper-card" id="reportPrintArea">
+            <div class="report-paper-header">
+              <div class="report-brand">
+                <div class="brand-icon small"><i data-lucide="bar-chart-3"></i></div>
+                <div>
+                  <div class="report-brand-name">PULSE ANALYTICS</div>
+                  <div class="report-confidential">CONFIDENTIAL · EXECUTIVE BRIEFING</div>
+                </div>
+              </div>
+              <div class="report-timestamp" id="reportDateStamp">August 18, 2026 · 09:50 UTC</div>
+            </div>
+
+            <div class="report-document-body" id="reportDocumentBody">
+              <!-- Live preview content rendered by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 8: SAVED ANALYSIS (SAVED PIPELINES & QUERIES)                    -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-saved-analysis">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Pipelines / Saved Analysis</div>
+            <h1 class="view-title">Saved Analysis & Scheduled Runs</h1>
+            <p class="view-subtitle">Access bookmarked analytical workflows, automate recurring query executions, and view execution history.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="switchView('data-analysis')">
+              <i data-lucide="plus"></i>
+              <span>New Analysis Pipeline</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="saved-queries-grid">
+          <!-- Saved Query 1 -->
+          <div class="card query-card">
+            <div class="query-card-header">
+              <div class="query-icon blue"><i data-lucide="trending-up"></i></div>
+              <span class="badge-outline">Forecasting</span>
+            </div>
+            <h4 class="query-title">Quarterly SaaS ARR Trajectory & Run-Rate</h4>
+            <p class="query-desc">Linear slope & moving average forecast for North America and EMEA ARR.</p>
+            <div class="query-meta-strip">
+              <span>Dataset: SaaS ARR</span> · <span>Schedule: Weekly Mon 08:00</span>
+            </div>
+            <div class="query-card-footer">
+              <button class="btn-primary-sm" onclick="runPresetAnalysis('forecasting')"><i data-lucide="play"></i> Run Now</button>
+              <button class="btn-ghost-sm" onclick="showToast('Query URL copied to clipboard', 'success')"><i data-lucide="share-2"></i> Share</button>
+            </div>
+          </div>
+
+          <!-- Saved Query 2 -->
+          <div class="card query-card">
+            <div class="query-card-header">
+              <div class="query-icon emerald"><i data-lucide="users"></i></div>
+              <span class="badge-outline">Correlation</span>
+            </div>
+            <h4 class="query-title">Cohort Churn vs Support Ticket Velocity</h4>
+            <p class="query-desc">Pearson correlation coefficient monitoring customer dissatisfaction leading indicators.</p>
+            <div class="query-meta-strip">
+              <span>Dataset: E-Comm Users</span> · <span>Schedule: Daily 12:00</span>
+            </div>
+            <div class="query-card-footer">
+              <button class="btn-primary-sm" onclick="runPresetAnalysis('correlation')"><i data-lucide="play"></i> Run Now</button>
+              <button class="btn-ghost-sm" onclick="showToast('Query URL copied to clipboard', 'success')"><i data-lucide="share-2"></i> Share</button>
+            </div>
+          </div>
+
+          <!-- Saved Query 3 -->
+          <div class="card query-card">
+            <div class="query-card-header">
+              <div class="query-icon amber"><i data-lucide="package"></i></div>
+              <span class="badge-outline">Outliers</span>
+            </div>
+            <h4 class="query-title">SKU Safety Stock & Lead Time Anomaly Scan</h4>
+            <p class="query-desc">Statistical Z-score audit detecting inventory items nearing stockout risks.</p>
+            <div class="query-meta-strip">
+              <span>Dataset: Retail Inventory</span> · <span>Schedule: Hourly Poll</span>
+            </div>
+            <div class="query-card-footer">
+              <button class="btn-primary-sm" onclick="runPresetAnalysis('outliers')"><i data-lucide="play"></i> Run Now</button>
+              <button class="btn-ghost-sm" onclick="showToast('Query URL copied to clipboard', 'success')"><i data-lucide="share-2"></i> Share</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 9: SETTINGS                                                      -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-settings">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Administration / Settings</div>
+            <h1 class="view-title">Workspace Settings & Security</h1>
+            <p class="view-subtitle">Manage organization data governance policies, retention rules, API credentials, and platform themes.</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="showToast('Workspace settings saved successfully', 'success')">
+              <i data-lucide="save"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid-1-2">
+          <!-- Settings Nav Menu -->
+          <div class="card">
+            <div class="card-body p-0">
+              <div class="settings-nav-list">
+                <button class="settings-nav-item active"><i data-lucide="sliders"></i> General Workspace</button>
+                <button class="settings-nav-item"><i data-lucide="shield"></i> Security & Compliance</button>
+                <button class="settings-nav-item"><i data-lucide="key"></i> API Keys & Tokens</button>
+                <button class="settings-nav-item"><i data-lucide="hard-drive"></i> Data Retention</button>
+                <button class="settings-nav-item"><i data-lucide="bell"></i> Notifications & Webhooks</button>
+                <button class="settings-nav-item"><i data-lucide="file-check"></i> Audit Logs</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Form Panel -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">General Workspace Configuration</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Organization Name</label>
+                <input type="text" class="form-input" value="Enterprise Analytics Global Inc.">
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Default Analytics Currency & Notation</label>
+                <select class="form-select">
+                  <option selected>USD ($) — Millions / Thousands</option>
+                  <option>INR (₹) — Lakhs / Crores</option>
+                  <option>EUR (€) — Standard Euro</option>
+                  <option>GBP (£) — British Pounds</option>
+                </select>
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Default Color Theme</label>
+                <div class="theme-select-row">
+                  <button class="theme-select-card active" onclick="setAppTheme('light')">
+                    <div class="theme-preview light"></div>
+                    <span>Light Theme (Default)</span>
+                  </button>
+                  <button class="theme-select-card" onclick="setAppTheme('dark')">
+                    <div class="theme-preview dark"></div>
+                    <span>Dark Theme</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group mt-4">
+                <label class="form-label">Data Retention Policy</label>
+                <select class="form-select">
+                  <option selected>Retain all analytical snapshots (Unlimited)</option>
+                  <option>Purge raw datasets older than 365 days</option>
+                  <option>Purge raw datasets older than 90 days</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 10: USER PROFILE & TEAM                                          -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-profile">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Account / User Profile</div>
+            <h1 class="view-title">User Profile & Access Governance</h1>
+            <p class="view-subtitle">Manage user account details, team member invitations, and role-based permissions (RBAC).</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn-primary" onclick="showToast('Profile updated', 'success')">
+              <i data-lucide="check"></i>
+              <span>Update Profile</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid-1-2">
+          <!-- Profile Card -->
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="avatar-large">SJ</div>
+              <h3 class="mt-3 font-bold">Sanjay Raman</h3>
+              <p class="text-sub">Principal Business Intelligence Lead</p>
+              <div class="badge-solid blue mt-2">Executive Admin</div>
+
+              <div class="profile-details-list mt-6">
+                <div class="p-detail-item">
+                  <span class="p-label">Email</span>
+                  <span class="p-val">sanjay.raman@enterprise.ai</span>
+                </div>
+                <div class="p-detail-item">
+                  <span class="p-label">Department</span>
+                  <span class="p-val">Global Analytics & Strategy</span>
+                </div>
+                <div class="p-detail-item">
+                  <span class="p-label">Two-Factor Auth</span>
+                  <span class="p-val text-success">Enabled (FIDO2)</span>
+                </div>
+                <div class="p-detail-item">
+                  <span class="p-label">Member Since</span>
+                  <span class="p-val">January 2024</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Team & Permissions Card -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Team Members & Role-Based Access</h3>
+                <p class="card-subtitle">Granular permission control across datasets and reports.</p>
+              </div>
+              <button class="btn-secondary" onclick="showToast('Invitation modal triggered', 'info')"><i data-lucide="user-plus"></i> Invite Member</button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="data-table-clean">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Access Level</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="user-row-meta">
+                          <span class="avatar-tiny">SJ</span>
+                          <div>
+                            <div class="font-medium">Sanjay Raman</div>
+                            <div class="text-xs text-sub">sanjay@enterprise.ai</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="role-badge admin">Admin</span></td>
+                      <td>Full Read/Write/Export</td>
+                      <td><span class="status-badge success">Active</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="user-row-meta">
+                          <span class="avatar-tiny">AP</span>
+                          <div>
+                            <div class="font-medium">Ananya Patel</div>
+                            <div class="text-xs text-sub">ananya.p@enterprise.ai</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="role-badge analyst">Lead Data Scientist</span></td>
+                      <td>Data Analysis & Ingestion</td>
+                      <td><span class="status-badge success">Active</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="user-row-meta">
+                          <span class="avatar-tiny">RK</span>
+                          <div>
+                            <div class="font-medium">Rahul Kumar</div>
+                            <div class="text-xs text-sub">rahul.k@enterprise.ai</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="role-badge analyst">Financial Analyst</span></td>
+                      <td>Read & Reports Export</td>
+                      <td><span class="status-badge success">Active</span></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="user-row-meta">
+                          <span class="avatar-tiny">EL</span>
+                          <div>
+                            <div class="font-medium">Elena Laurent</div>
+                            <div class="text-xs text-sub">elena.l@enterprise.ai</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="role-badge viewer">Executive Viewer</span></td>
+                      <td>Dashboard & Reports View</td>
+                      <td><span class="status-badge success">Active</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW: WHATSAPP ALERT AUTOMATION DASHBOARD                             -->
+      <!-- ===================================================================== -->
+      <section class="view-panel" id="view-whatsapp-automation">
+        <!-- View Header -->
+        <div class="view-header">
+          <div class="view-title-group">
+            <div class="view-breadcrumbs">Intelligence & Outputs / WhatsApp Alert Automation</div>
+            <h1 class="view-title">
+              <i data-lucide="message-square" class="title-icon green"></i>
+              AI-Powered WhatsApp Alert Automation
+            </h1>
+            <p class="view-description">Real-time business event monitoring, cooldown deduplication, dynamic multilingual message composer, and live phone dispatch simulator.</p>
+          </div>
+          <div class="view-actions">
+            <!-- Master Toggle Switch -->
+            <div class="whatsapp-master-toggle-box">
+              <span class="toggle-label-text">Master Automation</span>
+              <label class="switch-toggle" title="Enable/Disable all WhatsApp automated alerts">
+                <input type="checkbox" id="whatsappMasterToggle" checked onchange="toggleWhatsAppAutomation(this.checked)">
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            
+            <button class="btn-secondary" onclick="openWhatsAppConfigModal()">
+              <i data-lucide="settings-2"></i> Configure Gateway
+            </button>
+            <button class="btn-secondary" onclick="evaluateWhatsAppTriggersNow()">
+              <i data-lucide="refresh-cw"></i> Check Triggers Now
+            </button>
+            <button class="btn-primary" onclick="openComposeAlertModal()">
+              <i data-lucide="send"></i> Compose Alert
+            </button>
+          </div>
+        </div>
+
+        <!-- WhatsApp Automation Status & KPI Grid -->
+        <div class="whatsapp-kpi-grid">
+          <div class="kpi-card whatsapp-kpi">
+            <div class="kpi-header">
+              <span class="kpi-title">Gateway Status</span>
+              <span class="status-indicator active" id="whatsappGatewayBadge">
+                <span class="ping-dot green"></span> Connected
+              </span>
+            </div>
+            <div class="kpi-value-row">
+              <div class="kpi-value" id="whatsappGatewayProvider">Simulator Gateway</div>
+            </div>
+            <div class="kpi-subtext" id="whatsappGatewayPhone">
+              <i data-lucide="phone"></i> Recipient: <strong>+91 98765 43210</strong> (Chinnu)
+            </div>
+          </div>
+
+          <div class="kpi-card whatsapp-kpi">
+            <div class="kpi-header">
+              <span class="kpi-title">Total Alerts Dispatched</span>
+              <div class="kpi-icon-badge green"><i data-lucide="check-check"></i></div>
+            </div>
+            <div class="kpi-value-row">
+              <div class="kpi-value" id="whatsappTotalSentCount">12</div>
+              <span class="kpi-trend positive"><i data-lucide="trending-up"></i> 100% Delivery</span>
+            </div>
+            <div class="kpi-subtext">Zero dropped packets · 256-Bit SSL</div>
+          </div>
+
+          <div class="kpi-card whatsapp-kpi">
+            <div class="kpi-header">
+              <span class="kpi-title">Active Trigger Rules</span>
+              <div class="kpi-icon-badge blue"><i data-lucide="zap"></i></div>
+            </div>
+            <div class="kpi-value-row">
+              <div class="kpi-value" id="whatsappActiveRulesCount">4 Rules</div>
+              <span class="kpi-trend positive">Continuous Polling</span>
+            </div>
+            <div class="kpi-subtext">Inventory, Sentiment, Sales & Briefings</div>
+          </div>
+
+          <div class="kpi-card whatsapp-kpi">
+            <div class="kpi-header">
+              <span class="kpi-title">Cooldown & Anti-Spam</span>
+              <div class="kpi-icon-badge amber"><i data-lucide="shield-check"></i></div>
+            </div>
+            <div class="kpi-value-row">
+              <div class="kpi-value" id="whatsappCooldownValue">6 Hours</div>
+              <span class="kpi-trend neutral">Deduplication ON</span>
+            </div>
+            <div class="kpi-subtext">Max 10 dispatches/hr rate limit</div>
+          </div>
+        </div>
+
+        <!-- 2-Column Main Automation Workspace -->
+        <div class="whatsapp-workspace-grid">
+          
+          <!-- LEFT COLUMN: Rules, Scheduled Jobs, Alert Logs -->
+          <div class="whatsapp-left-col">
+
+            <!-- Card 1: Trigger Rules Policy Manager -->
+            <div class="dashboard-card mb-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3 class="card-title"><i data-lucide="sliders"></i> Automated Trigger Rules</h3>
+                  <span class="card-subtitle">Events that automatically generate and dispatch intelligent WhatsApp alerts</span>
+                </div>
+                <div class="card-actions">
+                  <button class="btn-ghost-sm" onclick="openCreateRuleModal()">
+                    <i data-lucide="plus"></i> Add Custom Rule
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="whatsappRulesTable">
+                  <thead>
+                    <tr>
+                      <th>Rule Name</th>
+                      <th>Event Trigger</th>
+                      <th>Threshold Condition</th>
+                      <th>Severity</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="whatsappRulesTableBody">
+                    <!-- Populated dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Card 2: Scheduled Dispatches & Executive Digests -->
+            <div class="dashboard-card mb-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3 class="card-title"><i data-lucide="clock"></i> Scheduled Dispatches & Cron Digests</h3>
+                  <span class="card-subtitle">Automated recurring business summaries delivered directly to store executives</span>
+                </div>
+                <div class="card-actions">
+                  <button class="btn-ghost-sm" onclick="triggerScheduledDigestNow()">
+                    <i data-lucide="play"></i> Run Digest Now
+                  </button>
+                </div>
+              </div>
+              <div class="scheduled-jobs-list" id="scheduledJobsList">
+                <div class="scheduled-job-card">
+                  <div class="job-time-badge"><i data-lucide="sun"></i> 08:30 AM</div>
+                  <div class="job-meta">
+                    <div class="job-title">Daily Morning Executive Briefing</div>
+                    <div class="job-desc">Sends Business Health Score, Projected Revenue, and Top Reorder SKUs.</div>
+                  </div>
+                  <div class="job-status">
+                    <span class="status-badge success">Active</span>
+                  </div>
+                </div>
+
+                <div class="scheduled-job-card">
+                  <div class="job-time-badge"><i data-lucide="package"></i> 07:00 PM</div>
+                  <div class="job-meta">
+                    <div class="job-title">Evening Inventory & Stockout Sweep</div>
+                    <div class="job-desc">Audits daily consumption and warns if any SKU drops below 5 days of runway.</div>
+                  </div>
+                  <div class="job-status">
+                    <span class="status-badge success">Active</span>
+                  </div>
+                </div>
+
+                <div class="scheduled-job-card">
+                  <div class="job-time-badge"><i data-lucide="calendar"></i> Sundays</div>
+                  <div class="job-meta">
+                    <div class="job-title">Weekly 360° Financial & Customer Retention Audit</div>
+                    <div class="job-desc">Full 7-day revenue trend, NPS changes, and matched MSME scheme updates.</div>
+                  </div>
+                  <div class="job-status">
+                    <span class="status-badge success">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Alert Transmission History & Delivery Logs -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <h3 class="card-title"><i data-lucide="history"></i> Live Alert Transmission History</h3>
+                  <span class="card-subtitle">Full immutable log of all outbound WhatsApp messages</span>
+                </div>
+                <div class="card-actions">
+                  <button class="btn-ghost-sm text-danger" onclick="clearWhatsAppHistory()">
+                    <i data-lucide="trash-2"></i> Clear Log
+                  </button>
+                  <button class="btn-ghost-sm" onclick="fetchWhatsAppHistory()">
+                    <i data-lucide="refresh-cw"></i> Refresh
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="whatsappLogTable">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Recipient</th>
+                      <th>Event & Title</th>
+                      <th>Severity</th>
+                      <th>Channel</th>
+                      <th>Delivery Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="whatsappLogTableBody">
+                    <!-- Populated dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Live Smartphone WhatsApp Simulator -->
+          <div class="whatsapp-right-col">
+            <div class="phone-mockup-wrapper">
+              <div class="phone-mockup-container">
+                <!-- Phone Top Speaker & Camera Notch -->
+                <div class="phone-notch">
+                  <div class="notch-speaker"></div>
+                  <div class="notch-camera"></div>
+                </div>
+
+                <!-- Phone Status Bar -->
+                <div class="phone-status-bar">
+                  <span class="phone-time" id="phoneMockupTime">09:41</span>
+                  <div class="phone-status-icons">
+                    <i data-lucide="signal" class="phone-ico"></i>
+                    <span class="phone-5g">5G</span>
+                    <i data-lucide="wifi" class="phone-ico"></i>
+                    <i data-lucide="battery-full" class="phone-ico"></i>
+                  </div>
+                </div>
+
+                <!-- WhatsApp Header -->
+                <div class="wa-chat-header">
+                  <div class="wa-header-left">
+                    <div class="wa-back-arrow"><i data-lucide="arrow-left"></i></div>
+                    <div class="wa-avatar-ring">
+                      <div class="wa-avatar">VP</div>
+                      <span class="wa-online-dot"></span>
+                    </div>
+                    <div class="wa-contact-info">
+                      <div class="wa-contact-name">
+                        Vyapaar Pulse Bot
+                        <i data-lucide="check-circle-2" class="wa-verified-badge"></i>
+                      </div>
+                      <div class="wa-contact-status" id="waBotStatus">Automated AI Operations · Online</div>
+                    </div>
+                  </div>
+                  <div class="wa-header-right">
+                    <button class="wa-icon-btn" title="Video Call"><i data-lucide="video"></i></button>
+                    <button class="wa-icon-btn" title="Voice Call"><i data-lucide="phone"></i></button>
+                    <button class="wa-icon-btn" title="Menu"><i data-lucide="more-vertical"></i></button>
+                  </div>
+                </div>
+
+                <!-- WhatsApp Chat Messages Body -->
+                <div class="wa-chat-body" id="waPhoneChatBody">
+                  <div class="wa-encryption-notice">
+                    <i data-lucide="lock" class="lock-ico"></i> Messages and alerts are end-to-end encrypted. No one outside of this chat can read them.
+                  </div>
+                  <div class="wa-date-divider"><span>TODAY</span></div>
+
+                  <!-- Dynamic WhatsApp Chat Bubbles Injected via JS -->
+                  <div id="waChatBubblesContainer">
+                    <!-- Seed bubble 1 -->
+                    <div class="wa-message-bubble incoming">
+                      <div class="wa-bubble-title">🚨 *Critical Stockout Alert*</div>
+                      <div class="wa-bubble-body">
+                        Hello *Chinnu*,<br><br>
+                        Urgent inventory attention required:<br>
+                        • Product: *Cooking Oil 5L* (<code>OIL-002</code>)<br>
+                        • Stock Remaining: *3 units* (2 days left)<br>
+                        • Stockout Risk: *94%*<br>
+                        • Recommended Reorder: *15 units* (EOQ: 20 units)<br><br>
+                        ⚡ *Recommended Action:* Place emergency vendor purchase order immediately.
+                      </div>
+                      <div class="wa-bubble-footer">
+                        <span class="wa-msg-time">08:30 AM</span>
+                        <i data-lucide="check-check" class="wa-double-check read"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Phone Quick Action Dock -->
+                <div class="wa-simulator-quick-dock">
+                  <div class="simulator-dock-title">Simulator Fast Actions:</div>
+                  <div class="simulator-quick-buttons">
+                    <button class="sim-pill-btn" onclick="sendStockoutTestAlert()">
+                      <i data-lucide="package-x"></i> Test Stock Alert
+                    </button>
+                    <button class="sim-pill-btn" onclick="sendDailySummaryAlert()">
+                      <i data-lucide="file-text"></i> Daily Briefing
+                    </button>
+                    <button class="sim-pill-btn" onclick="sendTamilPromoAlert()">
+                      <i data-lucide="sparkles"></i> தமிழ் Promo
+                    </button>
+                    <button class="sim-pill-btn text-danger" onclick="clearSimulatorChat()">
+                      <i data-lucide="trash-2"></i> Clear
+                    </button>
+                  </div>
+                </div>
+
+                <!-- WhatsApp Input Mockup -->
+                <div class="wa-chat-input-bar">
+                  <button class="wa-input-btn"><i data-lucide="smile"></i></button>
+                  <input type="text" id="waSimulatorInput" placeholder="Reply or enter command..." onkeydown="if(event.key==='Enter') sendSimulatorReply()">
+                  <button class="wa-input-btn"><i data-lucide="paperclip"></i></button>
+                  <button class="wa-send-circle-btn" onclick="sendSimulatorReply()"><i data-lucide="send"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: GLOBAL SEARCH (Cmd+K)                                               -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="searchModal" onclick="closeOnOverlayClick(event, 'searchModal')">
+  <div class="modal-container search-modal-box">
+    <div class="modal-search-input-box">
+      <i data-lucide="search"></i>
+      <input type="text" id="modalSearchInput" placeholder="Type a command or search metrics, views, datasets…" oninput="handleGlobalSearch(this.value)">
+      <kbd class="kbd-esc" onclick="closeSearchModal()">ESC</kbd>
+    </div>
+    <div class="modal-search-results" id="modalSearchResults">
+      <div class="search-group-title">Navigation Shortcuts</div>
+      <div class="search-result-item" onclick="switchView('dashboard'); closeSearchModal();">
+        <i data-lucide="layout-dashboard"></i>
+        <div class="result-text">
+          <span class="result-title">Executive Dashboard</span>
+          <span class="result-sub">Overview KPIs, ARR growth, and telemetry</span>
+        </div>
+        <span class="result-action">Jump →</span>
+      </div>
+      <div class="search-result-item" onclick="switchView('whatsapp-automation'); closeSearchModal();">
+        <i data-lucide="message-square" class="green"></i>
+        <div class="result-text">
+          <span class="result-title">WhatsApp Alert Automation</span>
+          <span class="result-sub">Live phone simulator, trigger rules, and instant alerts</span>
+        </div>
+        <span class="result-action">Jump →</span>
+      </div>
+      <div class="search-result-item" onclick="switchView('data-feed'); closeSearchModal();">
+        <i data-lucide="upload-cloud"></i>
+        <div class="result-text">
+          <span class="result-title">Data Feeding & Upload Center</span>
+          <span class="result-sub">Upload CSV, Excel, or edit data grid</span>
+        </div>
+        <span class="result-action">Jump →</span>
+      </div>
+      <div class="search-result-item" onclick="switchView('data-analysis'); closeSearchModal();">
+        <i data-lucide="flask-conical"></i>
+        <div class="result-text">
+          <span class="result-title">Data Analysis Workspace</span>
+          <span class="result-sub">Run forecasting, correlation, descriptive statistics</span>
+        </div>
+        <span class="result-action">Jump →</span>
+      </div>
+      <div class="search-result-item" onclick="switchView('reports'); closeSearchModal();">
+        <i data-lucide="file-text"></i>
+        <div class="result-text">
+          <span class="result-title">Report Generation Studio</span>
+          <span class="result-sub">Export executive briefing PDFs and Excel sheets</span>
+        </div>
+        <span class="result-action">Jump →</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD DATA MODAL                                                     -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="addDataModal" onclick="closeOnOverlayClick(event, 'addDataModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title"><i data-lucide="plus-circle"></i> Add Data to Workspace</h3>
+      <button class="icon-btn-ghost" onclick="closeAddDataModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sub mb-4">Choose how you would like to provide new data for analysis and visualization.</p>
+      
+      <div class="add-options-grid">
+        <div class="add-option-card" onclick="closeAddDataModal(); switchView('data-feed'); switchFeedTab('upload');">
+          <div class="option-icon blue"><i data-lucide="upload-cloud"></i></div>
+          <div class="option-title">Upload Dataset File</div>
+          <div class="option-desc">Drop a CSV, Excel (.xlsx), or JSON file for instant automated parsing.</div>
+        </div>
+
+        <div class="add-option-card" onclick="closeAddDataModal(); switchView('data-feed'); switchFeedTab('manual');">
+          <div class="option-icon amber"><i data-lucide="table"></i></div>
+          <div class="option-title">Manual Data Entry</div>
+          <div class="option-desc">Create rows and columns directly in the interactive spreadsheet editor.</div>
+        </div>
+
+        <div class="add-option-card" onclick="closeAddDataModal(); switchView('data-feed'); switchFeedTab('connect');">
+          <div class="option-icon emerald"><i data-lucide="database"></i></div>
+          <div class="option-title">Connect Data Source</div>
+          <div class="option-desc">Integrate live databases, Google Sheets, or cloud storage lakes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: CONNECT DATA SOURCE CONFIGURATION                                 -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="connectSourceModal" onclick="closeOnOverlayClick(event, 'connectSourceModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="connectModalTitle"><i data-lucide="database"></i> Connect Data Source</h3>
+      <button class="icon-btn-ghost" onclick="closeConnectModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Connection Name</label>
+        <input type="text" class="form-input" id="connNameInput" value="Enterprise Production Database">
+      </div>
+      <div class="form-group mt-3">
+        <label class="form-label">Host / Endpoint URI</label>
+        <input type="text" class="form-input" id="connHostInput" value="postgres://analytics_user:********@dw-prod.aws.internal:5432/bi_dw">
+      </div>
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label">Sync Frequency</label>
+          <select class="form-select">
+            <option>Every 5 Minutes (Real-Time)</option>
+            <option selected>Every 15 Minutes</option>
+            <option>Hourly</option>
+            <option>Daily at Midnight</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">SSL Mode</label>
+          <select class="form-select">
+            <option selected>Require (TLS 1.3)</option>
+            <option>Verify-Full</option>
+            <option>Prefer</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="testConnectionStatus()"><i data-lucide="check"></i> Test Connection</button>
+      <button class="btn-primary" onclick="saveConnection()"><i data-lucide="save"></i> Save & Ingest</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: FULLSCREEN CHART ZOOM                                              -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="chartFullscreenModal" onclick="closeOnOverlayClick(event, 'chartFullscreenModal')">
+  <div class="modal-container chart-fullscreen-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="chartFullscreenTitle">Chart Fullscreen Inspection</h3>
+      <div class="header-actions">
+        <button class="btn-ghost-sm" onclick="exportFullscreenChart()"><i data-lucide="download"></i> Export PNG</button>
+        <button class="icon-btn-ghost" onclick="closeChartFullscreen()"><i data-lucide="x"></i></button>
+      </div>
+    </div>
+    <div class="modal-body fullscreen-chart-body">
+      <canvas id="fullscreenCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: HELP & DOCUMENTATION                                               -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="helpModal" onclick="closeOnOverlayClick(event, 'helpModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title"><i data-lucide="book-open"></i> Enterprise BI Platform Documentation</h3>
+      <button class="icon-btn-ghost" onclick="closeHelpModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <h4>Platform User Journey</h4>
+      <p class="text-sub mt-1"><strong>Dashboard → Feed Data → Preview Data → Validate & Clean → Select Analysis → Run Analysis → View Charts → Generate Insights → Create Report</strong></p>
+      
+      <div class="help-section mt-4">
+        <h5>1. Data Ingestion</h5>
+        <p class="text-sub text-sm">Upload datasets via CSV, Excel, or JSON, or click any of the 4 pre-built enterprise datasets to test immediately without loading external files.</p>
+      </div>
+
+      <div class="help-section mt-3">
+        <h5>2. Validation & Automated Remediation</h5>
+        <p class="text-sub text-sm">The platform automatically audits missing cells, duplicate records, and outliers with Z-scores > 3σ. Click <em>"Fix All Automatically"</em> to impute medians and deduplicate rows.</p>
+      </div>
+
+      <div class="help-section mt-3">
+        <h5>3. Statistical Analysis Models</h5>
+        <p class="text-sub text-sm">Choose from 8 analytics models including Linear/Exponential Forecasting with 95% Confidence Intervals, Pearson Correlation matrices, and Distribution Histograms.</p>
+      </div>
+
+      <div class="help-section mt-3">
+        <h5>4. Executive Reporting</h5>
+        <p class="text-sub text-sm">Export boardroom-ready PDF briefs or formatted multi-tab Excel workbooks (.xlsx) with a single click.</p>
+      </div>
+    </div>
+<!-- ========================================================================= -->
+<!-- MODAL: WHATSAPP CONFIGURATION & GATEWAY SETTINGS                           -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="whatsappConfigModal" onclick="closeOnOverlayClick(event, 'whatsappConfigModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title"><i data-lucide="settings-2" class="green"></i> WhatsApp Gateway & Alert Policy Settings</h3>
+      <button class="icon-btn-ghost" onclick="closeWhatsAppConfigModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Recipient Phone Number (E.164 with Country Code)</label>
+        <input type="text" class="form-input" id="waConfigPhone" value="+91 98765 43210" placeholder="+91 98765 43210">
+        <span class="form-help-text">Where automated notifications, stockout warnings, and daily summaries are sent.</span>
+      </div>
+
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label">Recipient Name</label>
+          <input type="text" class="form-input" id="waConfigName" value="Chinnu" placeholder="Store Owner / Manager">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gateway Dispatch Provider</label>
+          <select class="form-select" id="waConfigProvider">
+            <option value="simulator" selected>Vyapaar Pulse Interactive Simulator (Default)</option>
+            <option value="twilio">Twilio Programmable Messaging API</option>
+            <option value="meta_cloud">Meta WhatsApp Cloud API (Graph v19.0)</option>
+            <option value="webhook">Custom Webhook Dispatcher</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label">Cooldown Window (Minutes)</label>
+          <input type="number" class="form-input" id="waConfigCooldown" value="360" min="5" max="1440">
+          <span class="form-help-text">Prevents alert fatigue for the same SKU or issue (Default: 6 hrs).</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hourly Rate Limit</label>
+          <input type="number" class="form-input" id="waConfigRateLimit" value="10" min="1" max="100">
+          <span class="form-help-text">Maximum outbound WhatsApp alerts allowed per hour.</span>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label class="checkbox-label">
+          <input type="checkbox" id="waConfigCriticalOnly">
+          <span>Notify on <strong>Critical / High Urgency</strong> events only</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="testWhatsAppConnectionFromModal()">
+        <i data-lucide="send"></i> Test Connection
+      </button>
+      <button class="btn-primary" onclick="saveWhatsAppConfigFromModal()">
+        <i data-lucide="save"></i> Save Configuration
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: CREATE / EDIT WHATSAPP AUTOMATION RULE                              -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="createRuleModal" onclick="closeOnOverlayClick(event, 'createRuleModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title" id="createRuleModalTitle"><i data-lucide="plus-circle" class="green"></i> Create WhatsApp Automation Rule</h3>
+      <button class="icon-btn-ghost" onclick="closeCreateRuleModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ruleEditId" value="">
+
+      <div class="form-group">
+        <label class="form-label">Rule Title / Description</label>
+        <input type="text" class="form-input" id="ruleNameInput" placeholder="e.g. Critical Safety Stockdepletion Warning" value="Critical Safety Stockdepletion Warning">
+      </div>
+
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label">Trigger Event Type</label>
+          <select class="form-select" id="ruleEventTypeSelect" onchange="handleRuleEventTypeChange(this.value)">
+            <option value="stockout_risk" selected>Inventory Stockout Risk (Days Left)</option>
+            <option value="sentiment_dip">Customer Sentiment Ratio Dip (% Positive)</option>
+            <option value="sales_drop">Projected Sales Drop Anomaly (% Change)</option>
+            <option value="custom_metric">Custom Numerical KPI Threshold</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Condition Operator</label>
+          <select class="form-select" id="ruleOperatorSelect">
+            <option value="<=" selected>Less than or Equal to (≤)</option>
+            <option value="<">Strictly Less than (&lt;)</option>
+            <option value=">=">Greater than or Equal to (≥)</option>
+            <option value=">">Strictly Greater than (&gt;)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label" id="ruleThresholdLabel">Threshold Cutoff Value</label>
+          <input type="number" class="form-input" id="ruleThresholdInput" value="5" step="0.1">
+          <span class="form-help-text" id="ruleThresholdHelp">Triggers when days of stock remaining drops below this value.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notification Urgency / Priority</label>
+          <select class="form-select" id="ruleUrgencySelect">
+            <option value="critical" selected>🚨 Critical (Immediate Dispatch)</option>
+            <option value="high">⚠️ High Priority</option>
+            <option value="medium">⚡ Medium Alert</option>
+            <option value="info">ℹ️ Informational / Digest</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label class="checkbox-label">
+          <input type="checkbox" id="ruleAutoSendCheck" checked>
+          <span>Auto-dispatch instantly without requiring manual confirmation</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeCreateRuleModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveRuleFromModal()">
+        <i data-lucide="check"></i> Save Rule
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: COMPOSE DIRECT WHATSAPP ALERT                                      -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" id="composeAlertModal" onclick="closeOnOverlayClick(event, 'composeAlertModal')">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title"><i data-lucide="send" class="green"></i> Dynamic AI WhatsApp Message Composer</h3>
+      <button class="icon-btn-ghost" onclick="closeComposeAlertModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Recipient Phone</label>
+          <input type="text" class="form-input" id="composePhoneInput" value="+91 98765 43210">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message Language</label>
+          <select class="form-select" id="composeLangSelect" onchange="regenerateComposePreview()">
+            <option value="en" selected>English (Global/India)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="ml">മലയാളം (Malayalam)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2 mt-3">
+        <div class="form-group">
+          <label class="form-label">Preset AI Template</label>
+          <select class="form-select" id="composeTemplateSelect" onchange="handleComposeTemplateSelect(this.value)">
+            <option value="daily_summary" selected>📊 Daily Executive Briefing</option>
+            <option value="stockout_risk">🚨 Critical Stockout Risk (Cotton Sarees)</option>
+            <option value="sentiment_dip">⚠️ Customer Review Satisfaction Alert</option>
+            <option value="sales_surge">📈 Festive Surge Demand Forecast</option>
+            <option value="custom">✏️ Custom Custom Notification</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Urgency Level</label>
+          <select class="form-select" id="composeUrgencySelect">
+            <option value="critical">🚨 Critical</option>
+            <option value="high">⚠️ High</option>
+            <option value="medium">⚡ Medium</option>
+            <option value="info" selected>ℹ️ Informational</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label class="form-label">Alert Message Content (WhatsApp Markdown Supported)</label>
+        <textarea class="form-textarea" id="composeMessageText" rows="6"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeComposeAlertModal()">Cancel</button>
+      <button class="btn-primary" onclick="sendCustomAlertFromModal()">
+        <i data-lucide="send"></i> Dispatch to WhatsApp Now
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- FLOATING AI ASSISTANT WIDGET & DOCKED INTERACTION PANEL                   -->
+<!-- ========================================================================= -->
+<!-- Floating AI Trigger Button (Bottom-Right) -->
+<div class="floating-ai-btn-wrapper" id="floatingAiBtnWrapper">
+  <!-- Interactive Floating Badge -->
+  <div class="floating-ai-badge" id="floatingAiPill" onclick="toggleFloatingAiPanel()" title="Click to open AI Voice Assistant">
+    <span class="ai-badge-ping"></span>
+    <span class="ai-badge-text">✦ AI Copilot (Voice)</span>
+  </div>
+
+  <button class="floating-ai-btn" id="floatingAiBtn" onclick="toggleFloatingAiPanel()" aria-label="Open Multilingual AI Assistant" title="Open Multilingual AI Assistant">
+    <div class="ai-btn-glow-ring"></div>
+    <div class="ai-btn-core">
+      <div class="ai-btn-orb">
+        <svg class="ai-icon-bot-svg" viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 8V4H8"></path>
+          <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+          <path d="M2 14h2"></path>
+          <path d="M20 14h2"></path>
+          <path d="M15 13v2"></path>
+          <path d="M9 13v2"></path>
+        </svg>
+        <svg class="ai-icon-mic-svg" viewBox="0 0 24 24" width="13" height="13" stroke="#ec4899" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" x2="12" y1="19" y2="22"></line>
+        </svg>
+      </div>
+      <span class="ai-btn-status-dot"></span>
+    </div>
+  </button>
+</div>
+
+<!-- Floating AI Assistant Docked Interactive Panel -->
+<div class="floating-ai-panel" id="floatingAiPanel">
+  <!-- Panel Header -->
+  <div class="ai-panel-header">
+    <div class="ai-header-left">
+      <div class="ai-avatar-ring">
+        <div class="ai-avatar-icon"><i data-lucide="sparkles"></i></div>
+        <span class="ai-status-pulse"></span>
+      </div>
+      <div class="ai-title-info">
+        <div class="ai-name">
+          Vyapaar Pulse AI
+          <span class="ai-badge-live">LIVE</span>
+        </div>
+        <div class="ai-sub" id="aiHeaderSub">Multilingual Voice & WhatsApp Copilot</div>
+      </div>
+    </div>
+
+    <div class="ai-header-right">
+      <!-- Regional Language Selector Dropdown -->
+      <select class="ai-lang-select" id="assistantLangSelect" onchange="handleAssistantLangChange(this.value)" title="Change AI Voice & Assistant Language">
+        <option value="auto" selected>🌐 Auto Detect</option>
+        <option value="ta-IN">🇮🇳 தமிழ் (Tamil)</option>
+        <option value="en-IN">🇬🇧 English (India)</option>
+        <option value="hi-IN">🇮🇳 हिन्दी (Hindi)</option>
+        <option value="te-IN">🇮🇳 తెలుగు (Telugu)</option>
+        <option value="ml-IN">🇮🇳 മലയാളം (Malayalam)</option>
+        <option value="kn-IN">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+      </select>
+
+      <!-- Mute / Unmute Voice Output -->
+      <button class="ai-header-btn" id="aiVoiceMuteBtn" onclick="toggleAssistantVoiceMute()" title="Toggle Voice Output (TTS)">
+        <i data-lucide="volume-2" id="aiVoiceMuteIcon"></i>
+      </button>
+
+      <!-- Minimize / Close Panel -->
+      <button class="ai-header-btn" onclick="toggleFloatingAiPanel()" title="Close Assistant">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Audio Waveform Live Visualizer & Status Bar -->
+  <div class="ai-visualizer-bar" id="aiVisualizerBar">
+    <div class="waveform-bars" id="waveformBars">
+      <span class="wbar"></span>
+      <span class="wbar"></span>
+      <span class="wbar"></span>
+      <span class="wbar"></span>
+      <span class="wbar"></span>
+    </div>
+    <div class="ai-status-pill" id="aiStatusPill">
+      <span class="status-dot green"></span>
+      <span id="aiStatusText">Ready for Voice or Text</span>
+    </div>
+  </div>
+
+  <!-- Conversation History Stream -->
+  <div class="ai-chat-stream" id="aiChatStream">
+    <!-- Initial Welcome Message -->
+    <div class="ai-chat-bubble ai-bubble">
+      <div class="bubble-avatar"><i data-lucide="bot"></i></div>
+      <div class="bubble-content">
+        <div class="bubble-text">
+          👋 <strong>Hello! I am your Autonomous Multilingual Business Copilot.</strong><br><br>
+          I can analyze your store's health, forecast revenues, trigger automated WhatsApp alerts, and answer questions in <strong>Tamil (தமிழ்), English, Hindi (हिन्दी), Telugu (తెలుగు), Malayalam (മലയാളം), or Kannada (ಕನ್ನಡ)</strong>.<br><br>
+          Speak or type a command to get started!
+        </div>
+        <div class="bubble-meta">
+          <span class="bubble-time">Just now</span>
+          <span class="bubble-engine">✦ Vyapaar AI Engine</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Chips Carousel -->
+  <div class="ai-quick-chips-wrapper">
+    <div class="ai-quick-chips" id="aiQuickChips">
+      <button class="quick-chip" onclick="executeQuickPrompt('Enable WhatsApp alerts for critical events')">
+        <i data-lucide="bell"></i> 🚨 Enable WhatsApp Alerts
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Send today\'s performance summary to WhatsApp')">
+        <i data-lucide="send"></i> 📊 Send Summary to WhatsApp
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Check inventory stockout risks')">
+        <i data-lucide="package"></i> 📦 Check Stockout Risks
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Simulate festival surge for Diwali')">
+        <i data-lucide="trending-up"></i> 📈 Simulate Festival Surge
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('வணக்கம், business health eppadi irukku?')">
+        <span>🇮🇳 தமிழ்: Business Health?</span>
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Vyapar kaisa chal raha hai?')">
+        <span>🇮🇳 हिन्दी: व्यापार स्थिति?</span>
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Business ela undi, chupinchu?')">
+        <span>🇮🇳 తెలుగు: బిజినెస్ హెల్త్?</span>
+      </button>
+      <button class="quick-chip" onclick="executeQuickPrompt('Business engane und, parayuka?')">
+        <span>🇮🇳 മലയാളം: ബിസിനസ് ഹെൽത്ത്?</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Controls & Input Dock -->
+  <div class="ai-input-dock">
+    <!-- Stop Speaking Button (Shown when speaking) -->
+    <button class="ai-stop-btn hidden" id="aiStopSpeechBtn" onclick="stopAssistantSpeaking()" title="Stop Voice Speaking">
+      <i data-lucide="square"></i> Stop Speaking
+    </button>
+
+    <div class="ai-input-bar">
+      <!-- Microphone Toggle Button -->
+      <button class="ai-mic-btn" id="aiMicBtn" onclick="toggleMicrophoneListening()" title="Start/Stop Voice Recording">
+        <i data-lucide="mic" id="aiMicIcon"></i>
+      </button>
+
+      <!-- Text Input Field -->
+      <input type="text" class="ai-text-input" id="aiTextInput" placeholder="Ask in Tamil, Hindi, English, Telugu..." onkeydown="if(event.key==='Enter') sendAssistantTextMessage()">
+
+      <!-- Clear Chat Button -->
+      <button class="ai-icon-btn-ghost" onclick="clearAssistantChat()" title="Clear Conversation">
+        <i data-lucide="trash-2"></i>
+      </button>
+
+      <!-- Send Text Button -->
+      <button class="ai-send-btn" id="aiSendBtn" onclick="sendAssistantTextMessage()" title="Send Message">
+        <i data-lucide="send"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Application Main Controller Script -->
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

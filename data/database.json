@@ -1,0 +1,606 @@
+{
+  "business_profile": {
+    "name": "Chinnu Textiles & Home Store",
+    "owner_name": "Chinnu",
+    "category": "small",
+    "sector": "retail",
+    "turnover_lakhs": 68.0,
+    "state": "Tamil Nadu",
+    "phone": "+91 98765 43210",
+    "city": "Salem",
+    "established_year": 2018
+  },
+  "sales_history": [
+    182.0,
+    246.0,
+    268.0,
+    195.0,
+    231.0,
+    176.0,
+    168.0,
+    172.0,
+    179.0,
+    188.0,
+    196.0,
+    205.0,
+    230.0
+  ],
+  "sales_months": [
+    "Sep'25",
+    "Oct'25",
+    "Nov'25",
+    "Dec'25",
+    "Jan'26",
+    "Feb'26",
+    "Mar'26",
+    "Apr'26",
+    "May'26",
+    "Jun'26",
+    "Jul'26",
+    "Aug'26",
+    "Sep'26"
+  ],
+  "inventory": [
+    {
+      "name": "Cotton Sarees",
+      "sku": "TXT-CS-014",
+      "category": "Textiles",
+      "unit_cost": 450,
+      "selling_price": 750,
+      "stock": 38,
+      "daily_sales": 2.1,
+      "lead_time_days": 10
+    },
+    {
+      "name": "LED Bulbs (9W)",
+      "sku": "ELE-LB-009",
+      "category": "Electronics",
+      "unit_cost": 65,
+      "selling_price": 120,
+      "stock": 210,
+      "daily_sales": 6.5,
+      "lead_time_days": 5
+    },
+    {
+      "name": "Rice — 25kg bag",
+      "sku": "GRO-RC-025",
+      "category": "Groceries",
+      "unit_cost": 1100,
+      "selling_price": 1350,
+      "stock": 14,
+      "daily_sales": 3.4,
+      "lead_time_days": 7
+    },
+    {
+      "name": "School Notebooks",
+      "sku": "STA-NB-200",
+      "category": "Stationery",
+      "unit_cost": 25,
+      "selling_price": 45,
+      "stock": 480,
+      "daily_sales": 5.2,
+      "lead_time_days": 12
+    },
+    {
+      "name": "Steel Utensil Set",
+      "sku": "HOM-SU-006",
+      "category": "Home Goods",
+      "unit_cost": 850,
+      "selling_price": 1400,
+      "stock": 22,
+      "daily_sales": 0.8,
+      "lead_time_days": 15
+    },
+    {
+      "name": "Silk Blend Kurtis",
+      "sku": "TXT-SK-032",
+      "category": "Textiles",
+      "unit_cost": 380,
+      "selling_price": 699,
+      "stock": 55,
+      "daily_sales": 3.0,
+      "lead_time_days": 8
+    },
+    {
+      "name": "Cooking Oil 5L Can",
+      "sku": "GRO-CO-005",
+      "category": "Groceries",
+      "unit_cost": 620,
+      "selling_price": 720,
+      "stock": 8,
+      "daily_sales": 2.8,
+      "lead_time_days": 4
+    }
+  ],
+  "reviews": [
+    {
+      "text": "Saree quality romba nalla, super color and finish.",
+      "source": "Google Review",
+      "date": "2026-08-10"
+    },
+    {
+      "text": "Delivery was 4 days late, very frustrating experience.",
+      "source": "WhatsApp Feedback",
+      "date": "2026-08-11"
+    },
+    {
+      "text": "LED bulbs working perfectly, good price for the quality.",
+      "source": "Google Review",
+      "date": "2026-08-12"
+    },
+    {
+      "text": "Item vantha packaging mosam ah irundhuchu, box damaged.",
+      "source": "Direct Message",
+      "date": "2026-08-13"
+    },
+    {
+      "text": "Staff mikka friendly and helped me pick the right size.",
+      "source": "Store Walk-in",
+      "date": "2026-08-14"
+    },
+    {
+      "text": "Notebooks paper quality is average, not great not bad.",
+      "source": "Google Review",
+      "date": "2026-08-14"
+    },
+    {
+      "text": "Worst experience — wrong item sent and no refund yet.",
+      "source": "Google Review",
+      "date": "2026-08-15"
+    },
+    {
+      "text": "Rice quality super, will order again next month.",
+      "source": "WhatsApp Feedback",
+      "date": "2026-08-15"
+    },
+    {
+      "text": "Price konjam adhigama irukku but service is fast and reliable.",
+      "source": "Google Review",
+      "date": "2026-08-16"
+    },
+    {
+      "text": "Utensils looked nice in photo but real quality is poor.",
+      "source": "Direct Message",
+      "date": "2026-08-16"
+    },
+    {
+      "text": "Bohot badhiya service aur fast delivery hai! Highly recommended.",
+      "source": "Google Review",
+      "date": "2026-08-17"
+    },
+    {
+      "text": "Saman bahut accha hai, pricing bhi reasonable hai.",
+      "source": "Store Walk-in",
+      "date": "2026-08-17"
+    },
+    {
+      "text": "Saree semma quality, delivery romba fast!",
+      "source": "Direct Feed",
+      "date": "2026-08-18"
+    },
+    {
+      "text": "Saree semma quality, delivery romba fast!",
+      "source": "Direct Feed",
+      "date": "2026-08-18"
+    },
+    {
+      "text": "Saree semma quality, delivery romba fast!",
+      "source": "Direct Feed",
+      "date": "2026-08-18"
+    }
+  ],
+  "whatsapp_log": [
+    {
+      "to": "Test User",
+      "phone": "+91 98765 43210",
+      "event_type": "custom",
+      "urgency": "info",
+      "title": "Automated Verification Alert",
+      "message": "Verification test alert payload.",
+      "id": "alert-7637aa4a",
+      "timestamp": "2026-08-18T10:54:37",
+      "channel": "WhatsApp (Automated Bot)",
+      "status": "delivered"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:54 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:54:37",
+      "id": "alert-367c1f5f"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "daily_summary",
+      "type": "daily_summary",
+      "urgency": "info",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹196.6k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *60.0% Positive* (NPS Estimate: +27)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 10:54 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:54:37",
+      "id": "alert-57a0a8bb"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "daily_summary",
+      "type": "daily_summary",
+      "urgency": "info",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹196.6k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *60.0% Positive* (NPS Estimate: +27)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 10:54 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:54:27",
+      "id": "alert-c1c5b5bc"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:54 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:54:27",
+      "id": "alert-7a06a945"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "stockout_risk",
+      "type": "stockout_risk",
+      "urgency": "critical",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 10:54 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:54:27",
+      "id": "alert-811d2013"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "daily_summary",
+      "type": "daily_summary",
+      "urgency": "info",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹196.6k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *60.0% Positive* (NPS Estimate: +27)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-08706435"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "sales_drop",
+      "item_key": "sales_forecast",
+      "trigger_rule_id": "rule-3",
+      "urgency": "medium",
+      "title": "📉 Sales Velocity Drop Warning",
+      "message": "📉 *Sales Forecast Warning*\n\n• Projected Decline: *-14.5%* next month\n• Estimated Monthly Revenue: *₹196.6k*\n\n💡 *Action:* Launch a targeted WhatsApp promotional broadcast with 15% discount to your top 100 regular buyers.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-d8af2320"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "stockout_risk",
+      "item_key": "GRO-CO-005",
+      "trigger_rule_id": "rule-1",
+      "urgency": "critical",
+      "title": "🚨 Critical Stockout Alert: Cooking Oil 5L Can",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Cooking Oil 5L Can* (`GRO-CO-005`)\n• Stock Remaining: *8 units* (2.9 days left)\n• Stockout Probability: *71.4%*\n• Recommended Reorder: *11.2 units* (EOQ: 91 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-9e9cdc59"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "stockout_risk",
+      "item_key": "GRO-RC-025",
+      "trigger_rule_id": "rule-1",
+      "urgency": "critical",
+      "title": "🚨 Critical Stockout Alert: Rice — 25kg bag",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Rice — 25kg bag* (`GRO-RC-025`)\n• Stock Remaining: *14 units* (4.1 days left)\n• Stockout Probability: *76.5%*\n• Recommended Reorder: *23.8 units* (EOQ: 75 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-76ad3416"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-945b5e6e"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "stockout_risk",
+      "type": "stockout_risk",
+      "urgency": "critical",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:30",
+      "id": "alert-e631b186"
+    },
+    {
+      "to": "Test User",
+      "phone": "+91 98765 43210",
+      "event_type": "custom",
+      "urgency": "info",
+      "title": "Automated Verification Alert",
+      "message": "Verification test alert payload.",
+      "id": "alert-38c1e1b1",
+      "timestamp": "2026-08-18T10:45:07",
+      "channel": "WhatsApp (Automated Bot)",
+      "status": "delivered"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:07",
+      "id": "alert-0e19ea1f"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "daily_summary",
+      "type": "daily_summary",
+      "urgency": "info",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹196.6k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *60.0% Positive* (NPS Estimate: +27)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 10:45 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:45:07",
+      "id": "alert-923f9bc2"
+    },
+    {
+      "to": "Test User",
+      "phone": "+91 98765 43210",
+      "event_type": "custom",
+      "urgency": "info",
+      "title": "Automated Verification Alert",
+      "message": "Verification test alert payload.",
+      "id": "alert-4758cd4e",
+      "timestamp": "2026-08-18T10:41:28",
+      "channel": "WhatsApp (Automated Bot)",
+      "status": "delivered"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 10:41 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:41:28",
+      "id": "alert-6cdefef6"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "daily_summary",
+      "type": "daily_summary",
+      "urgency": "info",
+      "title": "📊 Daily Business Intelligence Briefing",
+      "message": "📊 *Vyapaar Pulse Daily Executive Briefing*\n\nHello *Chinnu*! Here is your daily operational telemetry:\n\n• Business Health Score: *47/100* (Attention Required)\n• 3-Month Projected Revenue: *₹196.6k*\n• Inventory Stockout Triggers: *2 item(s) need reorder*\n• Customer Sentiment: *60.0% Positive* (NPS Estimate: +27)\n\n💡 *AI Recommendation:* Address packaging & delivery complaints and issue vendor purchase orders for low stock SKUs.\n\n🏢 _Chinnu Textiles & Home Store · Automated Intelligence Dispatch · 18 Aug 2026, 10:41 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T10:41:28",
+      "id": "alert-00b5c97b"
+    },
+    {
+      "type": "inventory",
+      "severity": "low",
+      "title": "📦 Capital Tied Up: LED Bulbs (9W)",
+      "message": "📦 Overstock notice: ₹13650.0 locked in LED Bulbs (9W) (32.3 days on hand). Launch a bundle discount promo to free up cash.",
+      "to": "Chinnu",
+      "timestamp": "2026-08-17T22:02:50",
+      "channel": "WhatsApp (Automated Bot)",
+      "delivery_status": "delivered"
+    },
+    {
+      "type": "inventory",
+      "severity": "high",
+      "title": "🚨 Urgent Reorder: Rice — 25kg bag",
+      "message": "⚠️ Stockout Risk (76.5%): Rice — 25kg bag has only 4.1 days of stock remaining. Place an order for at least 23.8 units (EOQ: 75 units) immediately.",
+      "to": "Chinnu",
+      "timestamp": "2026-08-17T22:02:50",
+      "channel": "WhatsApp (Automated Bot)",
+      "delivery_status": "delivered"
+    },
+    {
+      "type": "inventory",
+      "severity": "low",
+      "title": "📦 Capital Tied Up: School Notebooks",
+      "message": "📦 Overstock notice: ₹12000.0 locked in School Notebooks (92.3 days on hand). Launch a bundle discount promo to free up cash.",
+      "to": "Chinnu",
+      "timestamp": "2026-08-17T22:02:50",
+      "channel": "WhatsApp (Automated Bot)",
+      "delivery_status": "delivered"
+    },
+    {
+      "type": "inventory",
+      "severity": "high",
+      "title": "🚨 Urgent Reorder: Cooking Oil 5L Can",
+      "message": "⚠️ Stockout Risk (71.4%): Cooking Oil 5L Can has only 2.9 days of stock remaining. Place an order for at least 11.2 units (EOQ: 91 units) immediately.",
+      "to": "Chinnu",
+      "timestamp": "2026-08-17T22:02:50",
+      "channel": "WhatsApp (Automated Bot)",
+      "delivery_status": "delivered"
+    },
+    {
+      "type": "sales",
+      "severity": "medium",
+      "title": "📉 Sales Dip Forecasted",
+      "message": "📉 Sales forecast projects a 10.3% drop next month. Trigger a localized WhatsApp flash sale campaign to regular buyers.",
+      "to": "Chinnu",
+      "timestamp": "2026-08-17T22:02:50",
+      "channel": "WhatsApp (Automated Bot)",
+      "delivery_status": "delivered"
+    }
+  ],
+  "campaigns": [],
+  "last_sync": "2026-08-18T10:54:37.106635",
+  "whatsapp_automation": {
+    "enabled": true,
+    "recipient_phone": "+91 98765 43210",
+    "recipient_name": "Chinnu (Owner)",
+    "provider": "simulator",
+    "provider_config": {
+      "api_key": "",
+      "sender_number": "+14155238886",
+      "webhook_url": ""
+    },
+    "cooldown_minutes": 360,
+    "rate_limit_hourly": 10,
+    "notify_critical_only": true,
+    "rules": [
+      {
+        "id": "rule-1",
+        "name": "Critical Stockout Warning",
+        "event_type": "stockout_risk",
+        "metric": "days_left",
+        "operator": "<",
+        "threshold": 5,
+        "urgency": "critical",
+        "enabled": true,
+        "auto_send": true,
+        "description": "Trigger alert when stock days left falls below 5 days"
+      },
+      {
+        "id": "rule-2",
+        "name": "Customer Satisfaction Alert",
+        "event_type": "sentiment_dip",
+        "metric": "positive_pct",
+        "operator": "<",
+        "threshold": 50,
+        "urgency": "high",
+        "enabled": true,
+        "auto_send": true,
+        "description": "Notify when customer positive review ratio drops below 50%"
+      },
+      {
+        "id": "rule-3",
+        "name": "Sales Drop Anomaly",
+        "event_type": "sales_drop",
+        "metric": "next_period_pct_change",
+        "operator": "<",
+        "threshold": -8,
+        "urgency": "medium",
+        "enabled": true,
+        "auto_send": true,
+        "description": "Alert when forecast projects >8% decline next month"
+      },
+      {
+        "id": "rule-4",
+        "name": "Daily Executive Summary Briefing",
+        "event_type": "daily_summary",
+        "metric": "schedule",
+        "operator": "==",
+        "threshold": "09:00",
+        "urgency": "info",
+        "enabled": true,
+        "auto_send": true,
+        "description": "Send daily telemetry snapshot every morning at 09:00 AM"
+      },
+      {
+        "id": "rule-a81862",
+        "name": "Custom Margin Warning",
+        "event_type": "custom_metric",
+        "metric": "margin_pct",
+        "operator": "<",
+        "threshold": 30,
+        "urgency": "medium",
+        "enabled": true,
+        "auto_send": true,
+        "description": "User-defined automated rule"
+      },
+      {
+        "id": "rule-a19478",
+        "name": "Custom Margin Warning",
+        "event_type": "custom_metric",
+        "metric": "margin_pct",
+        "operator": "<",
+        "threshold": 30,
+        "urgency": "medium",
+        "enabled": true,
+        "auto_send": true,
+        "description": "User-defined automated rule"
+      },
+      {
+        "id": "rule-4b9a00",
+        "name": "Custom Margin Warning",
+        "event_type": "custom_metric",
+        "metric": "margin_pct",
+        "operator": "<",
+        "threshold": 30,
+        "urgency": "medium",
+        "enabled": true,
+        "auto_send": true,
+        "description": "User-defined automated rule"
+      }
+    ],
+    "scheduled_alerts": [
+      {
+        "id": "sched-1",
+        "name": "Morning Executive Briefing",
+        "time": "09:00 AM",
+        "frequency": "Daily",
+        "event_type": "daily_summary",
+        "enabled": true,
+        "last_run": "Today at 09:00 AM"
+      },
+      {
+        "id": "sched-2",
+        "name": "Evening Stock Reorder Scan",
+        "time": "06:00 PM",
+        "frequency": "Daily",
+        "event_type": "stockout_risk",
+        "enabled": true,
+        "last_run": "Today at 06:00 PM"
+      }
+    ],
+    "stats": {
+      "total_sent": 4,
+      "successful_sent": 4,
+      "failed_sent": 0,
+      "pending_count": 0
+    }
+  }
+}

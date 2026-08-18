@@ -2591,7 +2591,7 @@ function appendAiChatBubble(sender, text, extra = {}) {
         <div class="bubble-meta">
           <span class="bubble-time">${nowStr}</span>
           <div class="bubble-actions">
-            <button class="bubble-icon-btn" title="Replay Voice Audio" onclick="speakText('${text.replace(/'/g, "\\'")}', '${langCode}')">
+            <button class="bubble-icon-btn bubble-replay-btn" title="Replay Voice Audio">
               <i data-lucide="volume-2"></i>
             </button>
             <span class="bubble-engine">✦ ${extra.engine === 'gemini' ? 'Gemini 2.5 AI' : 'Multilingual Engine'}</span>
@@ -2599,6 +2599,10 @@ function appendAiChatBubble(sender, text, extra = {}) {
         </div>
       </div>
     `;
+    const replayBtn = bubble.querySelector('.bubble-replay-btn');
+    if (replayBtn) {
+      replayBtn.addEventListener('click', () => speakText(text, langCode));
+    }
   }
 
   stream.appendChild(bubble);

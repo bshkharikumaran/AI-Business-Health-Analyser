@@ -3,10 +3,18 @@ Vyapaar Pulse — Enterprise-Grade MSME Business Health Analyzer & Autonomous Vo
 Flask Application Entrypoint with Firebase Database Persistence, Real-Time Analytics,
 and AI-Powered WhatsApp Alert Automation Engine.
 """
+import sys
 import re
 import os
 import uuid
 from datetime import datetime
+
+# Windows terminal UTF-8 encoding support
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 from flask import Flask, jsonify, request, render_template
 
 import db
@@ -973,5 +981,5 @@ def api_generate_report():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    print(f"\n🚀 Vyapaar Pulse running on: http://127.0.0.1:{port}\n")
+    print(f"\n* Vyapaar Pulse Server running on: http://127.0.0.1:{port} *\n")
     app.run(debug=True, host="0.0.0.0", port=port)

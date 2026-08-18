@@ -186,6 +186,32 @@
   ],
   "whatsapp_log": [
     {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "test_connection",
+      "type": "system",
+      "urgency": "info",
+      "title": "✅ WhatsApp Automation Gateway Connected",
+      "message": "✅ *Vyapaar Pulse — WhatsApp Connection Verified*\n\nHello *Chinnu*,\nYour WhatsApp automated alert gateway is *active and verified*.\n\n• Recipient: *+91 98765 43210*\n• Encryption: *End-to-End Secure*\n• Automated Triggers: *Stockout Risks, NPS Dips & Daily Briefings*\n\n🎉 You are ready to receive live AI business intelligence alerts.\n\n🏢 _Chinnu Textiles & Home Store · 18 Aug 2026, 11:24 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T11:24:49",
+      "id": "alert-cf247e2a"
+    },
+    {
+      "to": "Chinnu (+91 98765 43210)",
+      "phone": "+91 98765 43210",
+      "event_type": "stockout_risk",
+      "type": "stockout_risk",
+      "urgency": "critical",
+      "title": "🚨 Critical Stockout Alert: Silk Sarees Premium",
+      "message": "🚨 *Critical Stockout Alert*\n\nHello *Chinnu*,\nUrgent inventory attention required for your business:\n\n• Product: *Silk Sarees Premium* (`SAR-001`)\n• Stock Remaining: *2 units* (1 days left)\n• Stockout Probability: *98.0%*\n• Recommended Reorder: *15 units* (EOQ: 20 units)\n\n⚡ *Recommended Action:* Place an emergency purchase order immediately to avoid weekend revenue loss.\n\n🏢 _Chinnu Textiles & Home Store · Vyapaar Pulse Automated Decision Engine · 18 Aug 2026, 11:24 AM_",
+      "status": "delivered",
+      "channel": "WhatsApp (Automated Bot)",
+      "timestamp": "2026-08-18T11:24:49",
+      "id": "alert-cb0c7149"
+    },
+    {
       "to": "Test User",
       "phone": "+91 98765 43210",
       "event_type": "custom",
@@ -395,7 +421,7 @@
     }
   ],
   "campaigns": [],
-  "last_sync": "2026-08-18T11:13:16.329277",
+  "last_sync": "2026-08-18T11:24:49.398300",
   "whatsapp_automation": {
     "enabled": true,
     "recipient_phone": "+91 98765 43210",

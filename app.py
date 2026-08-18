@@ -7,6 +7,8 @@ import sys
 import re
 import os
 import uuid
+import urllib.request
+import urllib.parse
 from datetime import datetime
 
 # Windows terminal UTF-8 encoding support
@@ -15,7 +17,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 
 import db
 import logic
@@ -884,6 +886,75 @@ def voice_command():
     transcript = body.get("transcript", "")
     result = voice_assistant.handle_voice_command(transcript, VOICE_EXECUTORS)
     return jsonify(result)
+
+
+def _fetch_tts_chunk(chunk_text, lang):
+    encoded_text = urllib.parse.quote(chunk_text)
+    url = f"https://translate.google.com/translate_tts?ie=UTF-8&tl={lang}&client=tw-ob&q={encoded_text}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    )
+    with urllib.request.urlopen(req, timeout=8) as response:
+        return response.read()
+
+
+@app.route("/api/voice/tts", methods=["GET", "POST"])
+def voice_tts():
+    if request.method == "POST":
+        body = request.get_json(silent=True) or {}
+        text = body.get("text", "")
+        lang = body.get("lang", "en")
+    else:
+        text = request.args.get("text", "")
+        lang = request.args.get("lang", "en")
+
+    if not text:
+        return jsonify({"error": "Missing text"}), 400
+
+    # Clean text from markdown and symbols
+    clean_text = re.sub(r'[*_`#~]', '', text).strip()
+    
+    # Extract base language code
+    lang_base = (lang or "en").split("-")[0].lower()
+    if lang_base not in ["ta", "hi", "te", "ml", "kn", "en", "es", "fr", "de", "bn"]:
+        lang_base = "ta" if re.search(r"[\u0B80-\u0BFF]", clean_text) else "en"
+
+    # Chunk text to avoid upstream length constraints (<= 180 chars per chunk)
+    chunks = []
+    if len(clean_text) <= 180:
+        chunks = [clean_text]
+    else:
+        sentences = re.split(r'([.!?,;\n]+)', clean_text)
+        current = ""
+        for i in range(0, len(sentences), 2):
+            part = sentences[i]
+            punct = sentences[i+1] if i+1 < len(sentences) else ""
+            seg = (part + punct).strip()
+            if not seg:
+                continue
+            if len(current) + len(seg) + 1 <= 180:
+                current = (current + " " + seg).strip()
+            else:
+                if current:
+                    chunks.append(current)
+                current = seg
+        if current:
+            chunks.append(current)
+
+    audio_bytes = bytearray()
+    for c in chunks:
+        if not c.strip():
+            continue
+        try:
+            audio_bytes.extend(_fetch_tts_chunk(c, lang_base))
+        except Exception:
+            pass
+
+    if not audio_bytes:
+        return jsonify({"error": "Failed to generate audio stream"}), 500
+
+    return Response(bytes(audio_bytes), mimetype="audio/mpeg", headers={"Cache-Control": "public, max-age=3600"})
 
 
 # ---------------------------------------------------------------------------

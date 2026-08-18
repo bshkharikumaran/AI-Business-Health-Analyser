@@ -101,6 +101,13 @@ def test_routes():
     assert v_res["lang_code"] == "hi-IN"
     print("✓ POST /api/voice/command (Hindi WhatsApp on) -> Lang:", v_res["lang_code"])
 
+    # 12. Voice Multilingual TTS Audio Stream (Tamil)
+    res = client.get("/api/voice/tts?lang=ta&text=" + "வணக்கம் உங்கள் பிசினஸ் சுருக்கம்")
+    assert res.status_code == 200
+    assert res.content_type == "audio/mpeg"
+    assert len(res.data) > 1000
+    print(f"✓ GET /api/voice/tts (Tamil Audio MP3) -> Status: 200, Stream Size: {len(res.data)} bytes")
+
     print("\n🎉 ALL REST API ENDPOINTS & VOICE EXECUTORS VALIDATED SUCCESSFULLY!")
 
 if __name__ == "__main__":

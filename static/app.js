@@ -2291,6 +2291,7 @@ let isVoiceMuted = false;
 let assistantLanguage = 'auto';
 let recognitionInstance = null;
 let synthesisVoices = [];
+let currentTtsAudio = null;
 
 function initFloatingAiAssistant() {
   // Populate speech synthesis voices when loaded
@@ -2463,6 +2464,13 @@ function updateSpeakingUI(active) {
 }
 
 function stopAssistantSpeaking() {
+  if (currentTtsAudio) {
+    try {
+      currentTtsAudio.pause();
+      currentTtsAudio.currentTime = 0;
+    } catch (e) {}
+    currentTtsAudio = null;
+  }
   if ('speechSynthesis' in window) {
     speechSynthesis.cancel();
   }
@@ -2470,19 +2478,62 @@ function stopAssistantSpeaking() {
 }
 
 function speakText(text, langCode = 'en-IN') {
-  if (isVoiceMuted || !('speechSynthesis' in window)) return;
+  if (isVoiceMuted) return;
   stopAssistantSpeaking();
 
-  const cleanText = text.replace(/[*_`#]/g, '');
+  const cleanText = text.replace(/[*_`#~]/g, '').trim();
+  if (!cleanText) return;
+
+  const targetLang = (langCode || 'en-IN').toLowerCase();
+
+  // 1. Try Server Native Audio Stream (Crystal clear native Tamil/Hindi/Telugu/Malayalam/Kannada audio)
+  try {
+    const audioUrl = `/api/voice/tts?lang=${encodeURIComponent(targetLang)}&text=${encodeURIComponent(cleanText)}`;
+    const audio = new Audio(audioUrl);
+    currentTtsAudio = audio;
+
+    audio.onplay = () => {
+      updateSpeakingUI(true);
+    };
+
+    audio.onended = () => {
+      updateSpeakingUI(false);
+      currentTtsAudio = null;
+    };
+
+    audio.onerror = (e) => {
+      console.warn('Server TTS stream playback error, falling back to SpeechSynthesis:', e);
+      currentTtsAudio = null;
+      fallbackBrowserSpeech(cleanText, targetLang);
+    };
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Audio play prevented by browser policy or network, falling back:', err);
+        fallbackBrowserSpeech(cleanText, targetLang);
+      });
+    }
+  } catch (err) {
+    fallbackBrowserSpeech(cleanText, targetLang);
+  }
+}
+
+function fallbackBrowserSpeech(cleanText, targetLang) {
+  if (!('speechSynthesis' in window)) {
+    updateSpeakingUI(false);
+    return;
+  }
   const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = langCode || 'en-IN';
+  utterance.lang = targetLang || 'en-IN';
   utterance.rate = 1.0;
   utterance.pitch = 1.0;
 
-  // Try to find matching regional voice
-  if (synthesisVoices.length > 0) {
-    const targetLang = (langCode || 'en').toLowerCase();
-    const matchingVoice = synthesisVoices.find(v => v.lang.toLowerCase() === targetLang || v.lang.toLowerCase().startsWith(targetLang.slice(0, 2)));
+  if (synthesisVoices && synthesisVoices.length > 0) {
+    const matchingVoice = synthesisVoices.find(v => 
+      v.lang.toLowerCase() === targetLang || 
+      v.lang.toLowerCase().startsWith(targetLang.slice(0, 2))
+    );
     if (matchingVoice) utterance.voice = matchingVoice;
   }
 

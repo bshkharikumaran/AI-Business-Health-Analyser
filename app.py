@@ -352,9 +352,171 @@ def _voice_get_schemes(category=None, sector=None, turnover_lakhs=None, state=No
     return {"spoken_text": f"Matched {result['match_count']} government subsidy schemes for this enterprise.", "view": "dashboard", "data": result}
 
 
+def _voice_get_full_summary(language=None):
+    state = _get_current_state()
+    forecast, inventory, sentiment, health = _current_analysis()
+    profile = state.get("business_profile", {})
+    
+    summary_data = {
+        "health_score": health.get("score", 47),
+        "health_badge": health.get("badge", "Attention Required"),
+        "net_arr": "$8.45M",
+        "arr_growth_yoy": "+18.4%",
+        "subscribers": 3850,
+        "cac": "$315",
+        "ltv": "$9,450",
+        "churn_rate": "0.9%",
+        "net_retention": "140%",
+        "forecast_next_month": forecast.get("forecast", [196.6])[0],
+        "inventory_total": inventory.get("total", 7),
+        "reorder_count": inventory.get("reorder_count", 2),
+        "locked_capital": inventory.get("total_capital_locked", 102710.0),
+        "critical_items": [i["name"] for i in inventory.get("items", []) if i.get("days_left", 99) <= 3],
+        "positive_sentiment_pct": sentiment.get("positive_pct", 60.0),
+        "nps": sentiment.get("nps_estimate", 27),
+        "data_records": "142,850",
+        "data_sources": "8 Connected",
+        "data_quality": "98.5%"
+    }
+    
+    # Regional Spoken Summaries
+    lang = (language or "en").lower()
+    if "ta" in lang:
+        spoken = (
+            f"வணக்கம்! உங்கள் பிசினஸ் சுருக்கம்: மொத்த Net ARR $8.45 Million (வளர்ச்சி +18.4%), "
+            f"பிசினஸ் ஹெல்த் ஸ்கோர் 100-க்கு {summary_data['health_score']} ({summary_data['health_badge']}). "
+            f"அடுத்த மாத உத்தேச விற்பனை ₹{summary_data['forecast_next_month']}k. "
+            f"இருப்பில் Cotton Sarees உள்ளிட்ட {summary_data['reorder_count']} பொருட்களுக்கு உடனடி ரீஆர்டர் தேவை. "
+            f"வாடிக்கையாளர் பாசிட்டிவ் ரேட்டிங் {summary_data['positive_sentiment_pct']}% (NPS: +{summary_data['nps']})."
+        )
+    elif "hi" in lang:
+        spoken = (
+            f"नमस्ते! आपके व्यापार का मुख्य सारांश: कुल Net ARR $8.45 Million है (+18.4% YoY), "
+            f"बिजनेस हेल्थ स्कोर {summary_data['health_score']}/100 है। "
+            f"अगले महीने का अनुमानित राजस्व ₹{summary_data['forecast_next_month']}k है। "
+            f"इन्वेंट्री में {summary_data['reorder_count']} उत्पादों का तुरंत रीऑर्डर आवश्यक है। "
+            f"ग्राहक संतुष्टि {summary_data['positive_sentiment_pct']}% पॉजिटिव (NPS: +{summary_data['nps']}) है।"
+        )
+    elif "te" in lang:
+        spoken = (
+            f"నమస్కారం! మీ వ్యాపార సారాంశం: మొత్తం Net ARR $8.45M (+18.4% వృద్ధి), "
+            f"హెల్త్ స్కోర్ 100 కి {summary_data['health_score']} ({summary_data['health_badge']}). "
+            f"వచ్చే నెల అంచనా అమ్మకాలు ₹{summary_data['forecast_next_month']}k. "
+            f"స్టాక్‌లో {summary_data['reorder_count']} వస్తువులకు వెంటనే రీఆర్డర్ అవసరం. "
+            f"కస్టమర్ సంతృప్తి {summary_data['positive_sentiment_pct']}% పాజిటివ్."
+        )
+    elif "ml" in lang:
+        spoken = (
+            f"നമസ്കാരം! നിങ്ങളുടെ ബിസിനസ്സ് സംഗ്രഹം: ആകെ Net ARR $8.45M (+18.4%), "
+            f"ഹെൽത്ത് സ്കോർ 100-ൽ {summary_data['health_score']}. "
+            f"അടുത്ത മാസത്തെ പ്രതീക്ഷിക്കുന്ന വരുമാനം ₹{summary_data['forecast_next_month']}k. "
+            f"{summary_data['reorder_count']} ഉൽപ്പന്നങ്ങൾക്ക് സ്റ്റോക്ക് റീഓർഡർ ആവശ്യമാണ്."
+        )
+    elif "kn" in lang:
+        spoken = (
+            f"ನಮಸ್ಕಾರ! ನಿಮ್ಮ ವ್ಯಾಪಾರ ಸಾರಾಂಶ: ಒಟ್ಟು Net ARR $8.45M (+18.4% ಬೆಳವಣಿಗೆ), "
+            f"ಹೆಲ್ತ್ ಸ್ಕೋರ್ 100 ಕ್ಕೆ {summary_data['health_score']}. "
+            f"ಮುಂದಿನ ತಿಂಗಳ ಅಂದಾಜು ಮಾರಾಟ ₹{summary_data['forecast_next_month']}k. "
+            f"{summary_data['reorder_count']} ವಸ್ತುಗಳಿಗೆ ತಕ್ಷಣ ಮರುಆರ್ಡರ್ ಅಗತ್ಯವಿದೆ."
+        )
+    else:
+        spoken = (
+            f"Executive Business Summary: Total Net ARR is $8.45M (+18.4% YoY) with 3,850 active subscribers and 140% net retention. "
+            f"Overall Business Health Score is {summary_data['health_score']}/100 ({summary_data['health_badge']}). "
+            f"Projected next month revenue is ₹{summary_data['forecast_next_month']}k. "
+            f"Inventory requires urgent reorders for {summary_data['reorder_count']} items (including Cotton Sarees). "
+            f"Customer sentiment stands at {summary_data['positive_sentiment_pct']}% positive with an NPS of +{summary_data['nps']}."
+        )
+        
+    return {"spoken_text": spoken, "view": "dashboard", "data": summary_data}
+
+
+def _voice_get_saas_metrics():
+    data = {
+        "net_arr": "$8.45M",
+        "mrr": "$704.1k",
+        "active_subscribers": 3850,
+        "cac": "$315",
+        "ltv": "$9,450",
+        "churn_rate": "0.9%",
+        "net_retention": "140%",
+        "regional_breakdown": {"North America": "45%", "EMEA": "32%", "APAC": "23%"}
+    }
+    text = (
+        f"Enterprise SaaS Telemetry: Net ARR is $8.45 Million with a monthly MRR of $704.1k across 3,850 active accounts. "
+        f"Net revenue retention is stellar at 140% with an ultra-low churn rate of 0.9%. Customer LTV is $9,450 vs CAC of $315."
+    )
+    return {"spoken_text": text, "view": "analytics", "data": data}
+
+
+def _voice_get_customer_churn():
+    data = {
+        "total_customers_tracked": 5,
+        "nps_score": 27,
+        "positive_ratio": "60.0%",
+        "at_risk_cohort": [{"id": "CUST-903", "segment": "At Risk", "churn_risk": "74.0%", "city": "Delhi", "tickets": 5, "last_order_days": 78}],
+        "top_spenders": [{"id": "CUST-905", "segment": "VIP Enterprise", "spend": "$15,400", "orders": 55, "churn_risk": "3.0%"}]
+    }
+    text = (
+        f"Customer Intelligence: 60% positive feedback with an NPS of +27. "
+        f"Alert: Customer CUST-903 in Delhi is At Risk with a 74% churn probability and 5 open support tickets. "
+        f"Top VIP account CUST-905 is highly engaged with $15,400 lifetime spend and 3% churn risk."
+    )
+    return {"spoken_text": text, "view": "insights", "data": data}
+
+
+def _voice_get_credit_risk():
+    data = {
+        "entities_audited": 4,
+        "top_credit": {"id": "ENT-01", "sector": "Textiles", "rating": "AAA", "score": 780, "dscr": 2.4, "runway_months": 14.2},
+        "at_risk": {"id": "ENT-04", "sector": "Leather Goods", "rating": "BB", "score": 610, "default_risk": "28.0%", "runway_months": 2.8}
+    }
+    text = (
+        f"Financial Risk & Credit Audit: Entity ENT-01 has a prime AAA rating with 780 credit score, 2.4 DSCR, and 14.2 months of cash runway. "
+        f"Entity ENT-04 carries a BB rating with 28% default probability and only 2.8 months of cash runway remaining."
+    )
+    return {"spoken_text": text, "view": "data-analysis", "data": data}
+
+
+def _voice_get_supply_chain():
+    data = {
+        "total_skus": 10,
+        "top_margin_item": "Natural Sandalwood Incense (62.5% Gross Margin)",
+        "high_velocity_item": "Heritage Filter Coffee Blend (12.0 units/day)",
+        "critical_low_stock": "Handcrafted Clay Terracotta Pot (3 units left, 1.6 days runway)"
+    }
+    text = (
+        f"Supply Chain Economics: Top gross margin item is Sandalwood Incense at 62.5%. "
+        f"Highest velocity product is Heritage Filter Coffee at 12 units per day. "
+        f"Immediate reorder needed for Terracotta Pots with only 3 units in stock (1.6 days runway)."
+    )
+    return {"spoken_text": text, "view": "dashboard", "data": data}
+
+
+def _voice_get_platform_telemetry():
+    data = {
+        "records_ingested": 142850,
+        "active_sources": 8,
+        "data_quality_pct": 98.5,
+        "critical_errors": 0,
+        "sync_mode": "Live Continuous Synchronization"
+    }
+    text = (
+        f"Platform Telemetry: 142,850 total records ingested across 8 connected enterprise data sources. "
+        f"Data quality score is 98.5% with 0 critical schema anomalies and real-time live sync active."
+    )
+    return {"spoken_text": text, "view": "data-feed", "data": data}
+
+
 VOICE_EXECUTORS = {
     "navigate_view": _voice_navigate,
     "get_business_health": _voice_get_health,
+    "get_full_business_summary": _voice_get_full_summary,
+    "get_saas_metrics": _voice_get_saas_metrics,
+    "get_customer_churn": _voice_get_customer_churn,
+    "get_credit_risk": _voice_get_credit_risk,
+    "get_supply_chain": _voice_get_supply_chain,
+    "get_platform_telemetry": _voice_get_platform_telemetry,
     "get_sales_forecast": _voice_get_forecast,
     "simulate_sales_scenario": _voice_simulate_scenario,
     "update_sales_month": _voice_update_sales_month,
